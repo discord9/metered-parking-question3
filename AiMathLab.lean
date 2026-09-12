@@ -2329,3 +2329,274 @@ end MeteredParking
 #print axioms MeteredParking.RankTemplate.blockLeader_injective
 #print axioms MeteredParking.RankTemplate.reorderBlocks_blockCarFiber
 #print axioms MeteredParking.RankTemplate.reorderBlocks_blockLeader
+
+/-!
+## Canonical templates and their reconstruction permutations
+
+Canonical order is increasing order of the minimum original car label in each
+whole block. Sorting acts on block identities, not merely on their lengths.
+The correspondence is first proved at the actual composition length. Its final
+boundary changes only the permutation index type to `Fin gapDimension`.
+-/
+
+namespace MeteredParking
+
+/-- A canonical template has its whole-block leaders in increasing order. -/
+def Canonical {t m k : ℕ} (T : RankTemplate t m k) : Prop :=
+  StrictMono T.blockLeader
+
+private noncomputable def RankTemplate.leaderImage {t m k : ℕ}
+    (T : RankTemplate t m k) : Finset (Fin m) :=
+  Finset.univ.image T.blockLeader
+
+private theorem RankTemplate.leaderImage_card {t m k : ℕ} (T : RankTemplate t m k) :
+    T.leaderImage.card = T.blockComposition.length := by
+  classical
+  rw [RankTemplate.leaderImage, Finset.card_image_of_injective _ T.blockLeader_injective]
+  exact Fintype.card_fin _
+
+private noncomputable def RankTemplate.leaderImageEquiv {t m k : ℕ}
+    (T : RankTemplate t m k) : Fin T.blockComposition.length ≃ ↥T.leaderImage := by
+  classical
+  let f : Fin T.blockComposition.length → ↥T.leaderImage := fun i =>
+    ⟨T.blockLeader i, Finset.mem_image.mpr ⟨i, Finset.mem_univ _, rfl⟩⟩
+  apply Equiv.ofBijective f
+  constructor
+  · intro i j h
+    exact T.blockLeader_injective (congrArg Subtype.val h)
+  · rintro ⟨j, hj⟩
+    obtain ⟨i, _, hi⟩ := Finset.mem_image.mp hj
+    exact ⟨i, Subtype.ext hi⟩
+
+/-- New sorted position maps to the old block having that leader. -/
+noncomputable def RankTemplate.sortBlocks {t m k : ℕ} (T : RankTemplate t m k) :
+    Equiv.Perm (Fin T.blockComposition.length) :=
+  (T.leaderImage.orderIsoOfFin T.leaderImage_card).toEquiv.trans T.leaderImageEquiv.symm
+
+private theorem RankTemplate.blockLeader_sortBlocks {t m k : ℕ} (T : RankTemplate t m k)
+    (i : Fin T.blockComposition.length) :
+    T.blockLeader (T.sortBlocks i) = T.leaderImage.orderEmbOfFin T.leaderImage_card i :=
+  congrArg Subtype.val (T.leaderImageEquiv.apply_symm_apply
+    (T.leaderImage.orderIsoOfFin T.leaderImage_card i))
+
+theorem RankTemplate.sortBlocks_strictMono {t m k : ℕ} (T : RankTemplate t m k) :
+    StrictMono (fun i => T.blockLeader (T.sortBlocks i)) := by
+  intro i j hij
+  exact (T.blockLeader_sortBlocks i).trans_lt
+    (((T.leaderImage.orderEmbOfFin T.leaderImage_card).strictMono hij).trans_eq
+      (T.blockLeader_sortBlocks j).symm)
+
+/-- Sorting is unique, including when different blocks have the same length. -/
+theorem RankTemplate.sortBlocks_unique {t m k : ℕ} (T : RankTemplate t m k)
+    (ρ : Equiv.Perm (Fin T.blockComposition.length)) :
+    StrictMono (fun i => T.blockLeader (ρ i)) ↔ ρ = T.sortBlocks := by
+  classical
+  constructor
+  · intro hρ
+    have hfun : (fun i => T.blockLeader (ρ i)) =
+        T.leaderImage.orderEmbOfFin T.leaderImage_card :=
+      Finset.orderEmbOfFin_unique T.leaderImage_card
+        (fun i => Finset.mem_image.mpr ⟨ρ i, Finset.mem_univ _, rfl⟩) hρ
+    apply Equiv.ext
+    intro i
+    apply T.blockLeader_injective
+    exact (congrFun hfun i).trans (T.blockLeader_sortBlocks i).symm
+  · rintro rfl
+    exact T.sortBlocks_strictMono
+
+theorem RankTemplate.sortBlocks_eq_refl {t m k : ℕ} (T : RankTemplate t m k)
+    (hT : Canonical T) : T.sortBlocks = Equiv.refl _ :=
+  ((T.sortBlocks_unique (Equiv.refl _)).mp hT).symm
+
+private theorem finMap_strictMono_of_value {a b : ℕ} (e : Fin a → Fin b)
+    (he : ∀ i, (e i : ℕ) = (i : ℕ)) : StrictMono e := by
+  intro i j hij
+  change (e i : ℕ) < (e j : ℕ)
+  rw [he i, he j]
+  exact hij
+
+private theorem RankTemplate.canonical_reorder_sorted {t m k : ℕ} (T : RankTemplate t m k)
+    (σ : Equiv.Perm (Fin T.blockComposition.length))
+    (hs : StrictMono (fun i => T.blockLeader (σ i))) : Canonical (T.reorderBlocks σ) := by
+  have he := finMap_strictMono_of_value (T.reorderLengthEquiv σ) (T.reorderLengthEquiv_val σ)
+  intro i j hij
+  calc
+    (T.reorderBlocks σ).blockLeader i = T.blockLeader (σ (T.reorderLengthEquiv σ i)) :=
+      T.reorderBlocks_blockLeader σ i
+    _ < T.blockLeader (σ (T.reorderLengthEquiv σ j)) := hs (he hij)
+    _ = (T.reorderBlocks σ).blockLeader j := (T.reorderBlocks_blockLeader σ j).symm
+
+/-- Sorting produces a canonical member of the existing template type. -/
+noncomputable def RankTemplate.canonicalize {t m k : ℕ} (T : RankTemplate t m k) :
+    {S : RankTemplate t m k // Canonical S} :=
+  ⟨T.reorderBlocks T.sortBlocks, T.canonical_reorder_sorted T.sortBlocks T.sortBlocks_strictMono⟩
+
+private theorem sorted_block_index_cancel {a b : ℕ} (e : Fin a ≃ Fin b)
+    (σ s : Equiv.Perm (Fin b)) (i : Fin a) :
+    σ (e ((((e.trans s).trans σ.symm).trans e.symm) i)) = s (e i) :=
+  (congrArg σ (e.apply_symm_apply (σ.symm (s (e i))))).trans (σ.apply_symm_apply (s (e i)))
+
+/-- Sorting after reordering uses inverse block transport, with only the
+value-preserving length identification on the position arguments. -/
+theorem RankTemplate.sortBlocks_reorder {t m k : ℕ} (T : RankTemplate t m k)
+    (σ : Equiv.Perm (Fin T.blockComposition.length)) :
+    (T.reorderBlocks σ).sortBlocks =
+      (((T.reorderLengthEquiv σ).trans T.sortBlocks).trans σ.symm).trans
+        (T.reorderLengthEquiv σ).symm := by
+  let U := T.reorderBlocks σ
+  let e := T.reorderLengthEquiv σ
+  let ρ := ((e.trans T.sortBlocks).trans σ.symm).trans e.symm
+  have he := finMap_strictMono_of_value e (T.reorderLengthEquiv_val σ)
+  have hleader (i : Fin U.blockComposition.length) :
+      U.blockLeader (ρ i) = T.blockLeader (T.sortBlocks (e i)) :=
+    (T.reorderBlocks_blockLeader σ (ρ i)).trans
+      (congrArg T.blockLeader (sorted_block_index_cancel e σ T.sortBlocks i))
+  have hs : StrictMono (fun i => U.blockLeader (ρ i)) := by
+    intro i j hij
+    exact (hleader i).trans_lt
+      ((T.sortBlocks_strictMono (he hij)).trans_eq (hleader j).symm)
+  exact ((U.sortBlocks_unique ρ).mp hs).symm
+
+private theorem RankTemplate.sortBlocks_reorder_canonical {t m k : ℕ}
+    (T : RankTemplate t m k) (hT : Canonical T)
+    (σ : Equiv.Perm (Fin T.blockComposition.length)) :
+    (T.reorderBlocks σ).sortBlocks = T.undoBlockPermutation σ := by
+  have hs := T.sortBlocks_reorder σ
+  rw [T.sortBlocks_eq_refl hT] at hs
+  exact hs
+
+/-- Canonicalization of a reconstructed canonical template recovers that template. -/
+theorem RankTemplate.canonicalize_reorder {t m k : ℕ} (T : RankTemplate t m k)
+    (hT : Canonical T) (σ : Equiv.Perm (Fin T.blockComposition.length)) :
+    (T.reorderBlocks σ).canonicalize = ⟨T, hT⟩ := by
+  apply Subtype.ext
+  change (T.reorderBlocks σ).reorderBlocks (T.reorderBlocks σ).sortBlocks = T
+  exact (congrArg (fun ρ => (T.reorderBlocks σ).reorderBlocks ρ)
+    (T.sortBlocks_reorder_canonical hT σ)).trans (T.reorderBlocks_inverse σ)
+
+/-- Canonical template paired with its inverse reconstruction permutation,
+still indexed internally by the actual composition length. -/
+noncomputable def canonicalPresentation {t m k : ℕ} (T : RankTemplate t m k) :
+    Σ S : {T : RankTemplate t m k // Canonical T}, Equiv.Perm (Fin S.1.blockComposition.length) :=
+  ⟨T.canonicalize, T.undoBlockPermutation T.sortBlocks⟩
+
+noncomputable def reconstructCanonical {t m k : ℕ}
+    (z : Σ S : {T : RankTemplate t m k // Canonical T},
+      Equiv.Perm (Fin S.1.blockComposition.length)) : RankTemplate t m k :=
+  z.1.1.reorderBlocks z.2
+
+/-- First roundtrip: the accepted concrete inverse reconstructs both labeled rank functions. -/
+theorem reconstruct_canonicalPresentation {t m k : ℕ} (T : RankTemplate t m k) :
+    reconstructCanonical (canonicalPresentation T) = T :=
+  T.reorderBlocks_inverse T.sortBlocks
+
+private theorem blockLeader_transport_eq {t m k : ℕ} {T U : RankTemplate t m k}
+    (h : T = U) (i : Fin T.blockComposition.length) (j : Fin U.blockComposition.length)
+    (hij : (i : ℕ) = (j : ℕ)) : T.blockLeader i = U.blockLeader j := by
+  subst U
+  exact congrArg T.blockLeader (Fin.ext hij)
+
+/-- Reconstruction determines the whole dependent pair. Canonicalization
+recovers its first component; injective leaders recover the second permutation. -/
+theorem reconstructCanonical_injective {t m k : ℕ} :
+    Function.Injective (@reconstructCanonical t m k) := by
+  rintro ⟨⟨T, hT⟩, π⟩ ⟨⟨U, hU⟩, ρ⟩ h
+  have hout : T.reorderBlocks π = U.reorderBlocks ρ := h
+  have hbase : T = U := congrArg Subtype.val
+    ((T.canonicalize_reorder hT π).symm.trans
+      ((congrArg (fun V : RankTemplate t m k => V.canonicalize) hout).trans
+        (U.canonicalize_reorder hU ρ)))
+  subst U
+  have hperm : π = ρ := by
+    apply Equiv.ext
+    intro i
+    let e := T.reorderLengthEquiv π
+    let f := T.reorderLengthEquiv ρ
+    have hei : (e.symm i : ℕ) = (i : ℕ) :=
+      finCongr_symm_apply_coe (T.reorderBlocks_length π) i
+    have hfi : (f.symm i : ℕ) = (i : ℕ) :=
+      finCongr_symm_apply_coe (T.reorderBlocks_length ρ) i
+    have hleader := blockLeader_transport_eq hout (e.symm i) (f.symm i) (hei.trans hfi.symm)
+    have hleft : (T.reorderBlocks π).blockLeader (e.symm i) = T.blockLeader (π i) :=
+      (T.reorderBlocks_blockLeader π (e.symm i)).trans
+        (congrArg (fun j => T.blockLeader (π j)) (e.apply_symm_apply i))
+    have hright : (T.reorderBlocks ρ).blockLeader (f.symm i) = T.blockLeader (ρ i) :=
+      (T.reorderBlocks_blockLeader ρ (f.symm i)).trans
+        (congrArg (fun j => T.blockLeader (ρ j)) (f.apply_symm_apply i))
+    exact T.blockLeader_injective (hleft.symm.trans (hleader.trans hright))
+  cases hperm
+  rfl
+
+/-- Second roundtrip is equality of the entire Sigma value, including its
+transported permutation component. It is not merely equality of templates. -/
+theorem canonicalPresentation_reconstruct {t m k : ℕ}
+    (z : Σ S : {T : RankTemplate t m k // Canonical T},
+      Equiv.Perm (Fin S.1.blockComposition.length)) :
+    canonicalPresentation (reconstructCanonical z) = z :=
+  reconstructCanonical_injective (reconstruct_canonicalPresentation (reconstructCanonical z))
+
+/-- The internal correspondence uses composition lengths throughout. -/
+noncomputable def rankTemplateEquivCanonicalLength (t m k : ℕ) :
+    RankTemplate t m k ≃
+      Σ S : {T : RankTemplate t m k // Canonical T},
+        Equiv.Perm (Fin S.1.blockComposition.length) where
+  toFun := canonicalPresentation
+  invFun := reconstructCanonical
+  left_inv := reconstruct_canonicalPresentation
+  right_inv := canonicalPresentation_reconstruct
+
+/-- The only external index change: conjugate by the value-preserving equality
+between the derived block count and `gapDimension`. Both directions are an Equiv. -/
+noncomputable def RankTemplate.gapPermutationEquiv {t m k : ℕ} (T : RankTemplate t m k) :
+    Equiv.Perm (Fin T.blockComposition.length) ≃ Equiv.Perm (Fin T.gapDimension) :=
+  Equiv.equivCongr (finCongr T.blockComposition_length) (finCongr T.blockComposition_length)
+
+/-- Every rank template has a unique canonical template and a reconstruction
+permutation on its gap dimensions. No counting or coefficient claim is made here. -/
+noncomputable def rankTemplateEquivCanonical (t m k : ℕ) :
+    RankTemplate t m k ≃
+      Σ S : {T : RankTemplate t m k // Canonical T}, Equiv.Perm (Fin S.1.gapDimension) :=
+  (rankTemplateEquivCanonicalLength t m k).trans
+    (Equiv.sigmaCongrRight (fun S => S.1.gapPermutationEquiv))
+
+theorem rankTemplateEquivCanonical_left_inv {t m k : ℕ} (T : RankTemplate t m k) :
+    (rankTemplateEquivCanonical t m k).symm (rankTemplateEquivCanonical t m k T) = T :=
+  (rankTemplateEquivCanonical t m k).symm_apply_apply T
+
+theorem rankTemplateEquivCanonical_right_inv {t m k : ℕ}
+    (z : Σ S : {T : RankTemplate t m k // Canonical T}, Equiv.Perm (Fin S.1.gapDimension)) :
+    rankTemplateEquivCanonical t m k ((rankTemplateEquivCanonical t m k).symm z) = z :=
+  (rankTemplateEquivCanonical t m k).apply_symm_apply z
+
+/-- Reconstruction preserves the rank-count projection needed for sum reindexing. -/
+theorem rankTemplateEquivCanonical_symm_rank {t m k : ℕ}
+    (z : Σ S : {T : RankTemplate t m k // Canonical T}, Equiv.Perm (Fin S.1.gapDimension)) :
+    ((rankTemplateEquivCanonical t m k).symm z).1 = z.1.1.1 := by
+  change (z.1.1.reorderBlocks (z.1.1.gapPermutationEquiv.symm z.2)).1 = z.1.1.1
+  exact z.1.1.reorderBlocks_rank _
+
+theorem rankTemplateEquivCanonical_symm_gapDimension {t m k : ℕ}
+    (z : Σ S : {T : RankTemplate t m k // Canonical T}, Equiv.Perm (Fin S.1.gapDimension)) :
+    ((rankTemplateEquivCanonical t m k).symm z).gapDimension = z.1.1.gapDimension := by
+  change (z.1.1.reorderBlocks (z.1.1.gapPermutationEquiv.symm z.2)).gapDimension =
+    z.1.1.gapDimension
+  exact z.1.1.reorderBlocks_gapDimension _
+
+end MeteredParking
+
+#print axioms MeteredParking.RankTemplate.sortBlocks_strictMono
+#print axioms MeteredParking.RankTemplate.sortBlocks_unique
+#print axioms MeteredParking.RankTemplate.sortBlocks_eq_refl
+#print axioms MeteredParking.RankTemplate.canonicalize
+#print axioms MeteredParking.RankTemplate.sortBlocks_reorder
+#print axioms MeteredParking.RankTemplate.canonicalize_reorder
+#print axioms MeteredParking.reconstruct_canonicalPresentation
+#print axioms MeteredParking.reconstructCanonical_injective
+#print axioms MeteredParking.canonicalPresentation_reconstruct
+#print axioms MeteredParking.rankTemplateEquivCanonicalLength
+#print axioms MeteredParking.RankTemplate.gapPermutationEquiv
+#print axioms MeteredParking.rankTemplateEquivCanonical
+#print axioms MeteredParking.rankTemplateEquivCanonical_left_inv
+#print axioms MeteredParking.rankTemplateEquivCanonical_right_inv
+#print axioms MeteredParking.rankTemplateEquivCanonical_symm_rank
+#print axioms MeteredParking.rankTemplateEquivCanonical_symm_gapDimension
