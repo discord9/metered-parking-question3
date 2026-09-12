@@ -1545,3 +1545,161 @@ end MeteredParking
 #print axioms MeteredParking.question3Polynomial_coeff_pos
 #print axioms MeteredParking.question3Polynomial_natDegree
 #print axioms MeteredParking.question3
+
+/-!
+## Relabeling ranks along forced intervals
+
+A rank permutation need not preserve the global order. Preserving the oriented
+unit step on every forced edge nevertheless makes it a translation on each
+car's traversed interval. This suffices for the original first-free relation
+and transports the forced-edge set exactly. No block decomposition or counting
+claim is used in this local semantic gate.
+-/
+
+namespace MeteredParking
+
+private theorem forcedEdges_relabel_translate {m r : ℕ} {u v : Fin m → Fin r}
+    (e : Equiv.Perm (Fin r))
+    (h_adj : ∀ q q' : Fin r, (q' : ℕ) = (q : ℕ) + 1 →
+      q ∈ forcedEdges u v → (e q' : ℕ) = (e q : ℕ) + 1)
+    (j : Fin m) (q : Fin r) (huq : u j ≤ q) (hqv : q ≤ v j) :
+    (e q : ℕ) + (u j : ℕ) = (e (u j) : ℕ) + (q : ℕ) := by
+  have translate : ∀ b : ℕ, ∀ q : Fin r, (q : ℕ) = b →
+      u j ≤ q → q ≤ v j →
+      (e q : ℕ) + (u j : ℕ) = (e (u j) : ℕ) + (q : ℕ) := by
+    intro b
+    induction b using Nat.strong_induction_on with
+    | h b ih =>
+        intro q hqb huq hqv
+        by_cases hqu : q = u j
+        · subst q
+          rfl
+        · have huqFin : u j < q := lt_of_le_of_ne huq (Ne.symm hqu)
+          have huqNat : (u j : ℕ) < (q : ℕ) := huqFin
+          let q₀ : Fin r := ⟨(q : ℕ) - 1, by
+            have hqr := q.isLt
+            omega⟩
+          have hq₀q : (q₀ : ℕ) + 1 = (q : ℕ) := by
+            change (q : ℕ) - 1 + 1 = (q : ℕ)
+            omega
+          have huq₀ : u j ≤ q₀ := by
+            change (u j : ℕ) ≤ (q : ℕ) - 1
+            omega
+          have hq₀v : q₀ < v j := by
+            have hqvNat : (q : ℕ) ≤ (v j : ℕ) := hqv
+            change (q : ℕ) - 1 < (v j : ℕ)
+            omega
+          have hforced : q₀ ∈ forcedEdges u v :=
+            (mem_forcedEdges u v q₀).mpr ⟨j, huq₀, hq₀v⟩
+          have hprev := ih (q₀ : ℕ) (by omega) q₀ rfl huq₀ (le_of_lt hq₀v)
+          have hstep := h_adj q₀ q hq₀q.symm hforced
+          omega
+  exact translate (q : ℕ) q rfl huq hqv
+
+/-- Every rank in a relabeled traversal comes from its original traversal.
+The inverse rank is constructed from the local translation, not from any
+assumed global monotonicity or interval-coverage premise. -/
+theorem relabel_interval_coverage {m r : ℕ} {u v : Fin m → Fin r}
+    (e : Equiv.Perm (Fin r))
+    (h_adj : ∀ q q' : Fin r, (q' : ℕ) = (q : ℕ) + 1 →
+      q ∈ forcedEdges u v → (e q' : ℕ) = (e q : ℕ) + 1)
+    (j : Fin m) (huv : u j ≤ v j) (s : Fin r)
+    (has : e (u j) ≤ s) (hsv : s < e (v j)) :
+    ∃ q : Fin r, u j ≤ q ∧ q < v j ∧ e q = s := by
+  have hvtrans := forcedEdges_relabel_translate e h_adj j (v j) huv le_rfl
+  have hasNat : (e (u j) : ℕ) ≤ (s : ℕ) := has
+  have hsvNat : (s : ℕ) < (e (v j) : ℕ) := hsv
+  have hqNat : (u j : ℕ) + ((s : ℕ) - (e (u j) : ℕ)) < (v j : ℕ) := by
+    omega
+  let q : Fin r :=
+    ⟨(u j : ℕ) + ((s : ℕ) - (e (u j) : ℕ)), lt_trans hqNat (v j).isLt⟩
+  have huq : u j ≤ q := by
+    change (u j : ℕ) ≤ (u j : ℕ) + ((s : ℕ) - (e (u j) : ℕ))
+    omega
+  have hqv : q < v j := hqNat
+  have hqtrans := forcedEdges_relabel_translate e h_adj j q huq (le_of_lt hqv)
+  have hqval : (q : ℕ) = (u j : ℕ) + ((s : ℕ) - (e (u j) : ℕ)) := rfl
+  refine ⟨q, huq, hqv, ?_⟩
+  apply Fin.ext
+  omega
+
+/-- Forced oriented adjacency suffices to preserve all three first-free
+conditions. Active car labels and the permission to reuse outcomes are unchanged. -/
+theorem IsParking.relabel_of_forced_adj {t m r : ℕ} {u v : Fin m → Fin r}
+    (hp : IsParking t u v) (e : Equiv.Perm (Fin r))
+    (h_adj : ∀ q q' : Fin r, (q' : ℕ) = (q : ℕ) + 1 →
+      q ∈ forcedEdges u v → (e q' : ℕ) = (e q : ℕ) + 1) :
+    IsParking t (fun j => e (u j)) (fun j => e (v j)) := by
+  intro j
+  have hvtrans := forcedEdges_relabel_translate e h_adj j (v j) (hp j).1 le_rfl
+  have huvNat : (u j : ℕ) ≤ (v j : ℕ) := (hp j).1
+  refine ⟨?_, ?_, ?_⟩
+  · change (e (u j) : ℕ) ≤ (e (v j) : ℕ)
+    omega
+  · intro i hij heq
+    exact (hp j).2.1 i hij (e.injective heq)
+  · intro s has hsv
+    obtain ⟨q, huq, hqv, heq⟩ := relabel_interval_coverage e h_adj j (hp j).1 s has hsv
+    obtain ⟨i, hij, hiq⟩ := (hp j).2.2 q huq hqv
+    exact ⟨i, hij, (congrArg e hiq).trans heq⟩
+
+/-- The relabeled forced edges are precisely the images of the old ones;
+there are no additional forced edges between reordered intervals. -/
+theorem forcedEdges_relabel_of_forced_adj {m r : ℕ} {u v : Fin m → Fin r}
+    (e : Equiv.Perm (Fin r))
+    (h_adj : ∀ q q' : Fin r, (q' : ℕ) = (q : ℕ) + 1 →
+      q ∈ forcedEdges u v → (e q' : ℕ) = (e q : ℕ) + 1)
+    (huv : ∀ j : Fin m, u j ≤ v j) :
+    forcedEdges (fun j => e (u j)) (fun j => e (v j)) = (forcedEdges u v).image e := by
+  classical
+  ext s
+  constructor
+  · intro hs
+    obtain ⟨j, has, hsv⟩ := (mem_forcedEdges _ _ s).mp hs
+    obtain ⟨q, huq, hqv, heq⟩ := relabel_interval_coverage e h_adj j (huv j) s has hsv
+    exact Finset.mem_image.mpr ⟨q, (mem_forcedEdges u v q).mpr ⟨j, huq, hqv⟩, heq⟩
+  · intro hs
+    obtain ⟨q, hq, rfl⟩ := Finset.mem_image.mp hs
+    obtain ⟨j, huq, hqv⟩ := (mem_forcedEdges u v q).mp hq
+    have hqtrans := forcedEdges_relabel_translate e h_adj j q huq (le_of_lt hqv)
+    have hvtrans := forcedEdges_relabel_translate e h_adj j (v j) (huv j) le_rfl
+    have huqNat : (u j : ℕ) ≤ (q : ℕ) := huq
+    have hqvNat : (q : ℕ) < (v j : ℕ) := hqv
+    apply (mem_forcedEdges _ _ _).mpr
+    refine ⟨j, ?_, ?_⟩
+    · change (e (u j) : ℕ) ≤ (e q : ℕ)
+      omega
+    · change (e q : ℕ) < (e (v j) : ℕ)
+      omega
+
+/-- A rank permutation preserving the oriented unit step on every forced edge
+preserves the full rank template, including surjectivity and exact lucky count,
+and transports its forced-edge set by image. This is a conditional relabeling
+lemma, not the integer-coefficient counting corollary. -/
+theorem IsRankTemplate.relabel_of_forced_adj {t m k r : ℕ} {u v : Fin m → Fin r}
+    (hT : IsRankTemplate t k u v) (e : Equiv.Perm (Fin r))
+    (h_adj : ∀ q q' : Fin r, (q' : ℕ) = (q : ℕ) + 1 →
+      q ∈ forcedEdges u v → (e q' : ℕ) = (e q : ℕ) + 1) :
+    IsRankTemplate t k (fun j => e (u j)) (fun j => e (v j)) ∧
+      forcedEdges (fun j => e (u j)) (fun j => e (v j)) = (forcedEdges u v).image e := by
+  classical
+  have hp : IsParking t u v := hT.2.2.2.1
+  have hlucky : luckyCount (fun j => e (u j)) (fun j => e (v j)) = luckyCount u v := by
+    unfold luckyCount
+    apply congrArg Finset.card
+    ext j
+    simp only [Finset.mem_filter, Finset.mem_univ, true_and]
+    exact ⟨fun h => e.injective h, fun h => congrArg e h⟩
+  refine ⟨⟨hT.1, hT.2.1, ?_, IsParking.relabel_of_forced_adj hp e h_adj,
+    hlucky.trans hT.2.2.2.2⟩,
+    forcedEdges_relabel_of_forced_adj e h_adj (fun j => (hp j).1)⟩
+  intro q
+  obtain ⟨j, hj⟩ := hT.2.2.1 (e.symm q)
+  exact ⟨j, (congrArg e hj).trans (e.apply_symm_apply q)⟩
+
+end MeteredParking
+
+#print axioms MeteredParking.relabel_interval_coverage
+#print axioms MeteredParking.IsParking.relabel_of_forced_adj
+#print axioms MeteredParking.forcedEdges_relabel_of_forced_adj
+#print axioms MeteredParking.IsRankTemplate.relabel_of_forced_adj
