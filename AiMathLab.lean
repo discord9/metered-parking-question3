@@ -1703,3 +1703,323 @@ end MeteredParking
 #print axioms MeteredParking.IsParking.relabel_of_forced_adj
 #print axioms MeteredParking.forcedEdges_relabel_of_forced_adj
 #print axioms MeteredParking.IsRankTemplate.relabel_of_forced_adj
+
+/-!
+## Derived block compositions and repacking
+
+The free gap coordinates already specify all block boundaries, including both
+endpoints. A permutation below sends each new block position to its old block
+index. Repacking changes the prefix sums, retains each local coordinate, and
+uses the previous semantic gate rather than reproving parking correctness.
+-/
+
+namespace MeteredParking
+
+open scoped BigOperators
+
+/-- The existing free gaps, viewed as boundaries; no extra boundary data is stored. -/
+noncomputable def RankTemplate.blockCompositionAsSet {t m k : ℕ}
+    (T : RankTemplate t m k) : CompositionAsSet (T.1 : ℕ) where
+  boundaries := T.freeGapIndices
+  zero_mem := T.zero_mem_freeGapIndices
+  getLast_mem := T.last_mem_freeGapIndices
+
+/-- The composition derived from the template's actual forced edges. -/
+noncomputable def RankTemplate.blockComposition {t m k : ℕ}
+    (T : RankTemplate t m k) : Composition (T.1 : ℕ) :=
+  T.blockCompositionAsSet.toComposition
+
+@[simp] theorem RankTemplate.blockComposition_boundaries {t m k : ℕ}
+    (T : RankTemplate t m k) : T.blockComposition.boundaries = T.freeGapIndices :=
+  CompositionAsSet.toComposition_boundaries T.blockCompositionAsSet
+
+@[simp] theorem RankTemplate.blockComposition_length {t m k : ℕ}
+    (T : RankTemplate t m k) : T.blockComposition.length = T.gapDimension := by
+  have h := T.blockComposition.card_boundaries_eq_succ_length
+  rw [T.blockComposition_boundaries, T.freeGapIndices_card] at h
+  omega
+
+theorem RankTemplate.mem_forcedEdges_iff_not_blockBoundary {t m k : ℕ}
+    (T : RankTemplate t m k) (q : Fin (T.1 : ℕ)) :
+    q ∈ forcedEdges T.2.1.1 T.2.1.2 ↔ q.succ ∉ T.blockComposition.boundaries := by
+  classical
+  rw [T.blockComposition_boundaries, RankTemplate.freeGapIndices,
+    Finset.mem_compl, not_not]
+  constructor
+  · intro hq
+    exact Finset.mem_image.mpr ⟨q, hq, rfl⟩
+  · intro hq
+    obtain ⟨p, hp, hpq⟩ := Finset.mem_image.mp hq
+    have heq : p = q := by
+      apply Fin.ext
+      have h := congrArg Fin.val hpq
+      change (p : ℕ) + 1 = (q : ℕ) + 1 at h
+      omega
+    simpa only [heq] using hp
+
+private theorem composition_succ_not_boundary_iff_end {r : ℕ}
+    (C : Composition r) (q : Fin r) :
+    q.succ ∉ C.boundaries ↔ (q : ℕ) + 1 < C.sizeUpTo ((C.index q : ℕ) + 1) := by
+  have hend : (q : ℕ) < C.sizeUpTo ((C.index q : ℕ) + 1) :=
+    C.lt_sizeUpTo_index_succ q
+  constructor
+  · intro hnot
+    by_contra hlt
+    apply hnot
+    change q.succ ∈ Finset.univ.map C.boundary.toEmbedding
+    refine Finset.mem_map.mpr ⟨(C.index q).succ, Finset.mem_univ _, ?_⟩
+    apply Fin.ext
+    change C.sizeUpTo ((C.index q : ℕ) + 1) = (q : ℕ) + 1
+    omega
+  · intro hlt hmem
+    change q.succ ∈ Finset.univ.map C.boundary.toEmbedding at hmem
+    obtain ⟨i, _, hi⟩ := Finset.mem_map.mp hmem
+    have hval : C.sizeUpTo (i : ℕ) = (q : ℕ) + 1 := congrArg Fin.val hi
+    by_cases hle : (i : ℕ) ≤ (C.index q : ℕ)
+    · have hmono := C.monotone_sizeUpTo hle
+      have hstart := C.sizeUpTo_index_le q
+      omega
+    · have hmono := C.monotone_sizeUpTo
+        (show (C.index q : ℕ) + 1 ≤ (i : ℕ) by omega)
+      omega
+
+private theorem composition_succ_not_boundary_iff_local {r : ℕ}
+    (C : Composition r) (q : Fin r) :
+    q.succ ∉ C.boundaries ↔
+      (C.invEmbedding q : ℕ) + 1 < C.blocksFun (C.index q) := by
+  rw [composition_succ_not_boundary_iff_end]
+  have hstart := C.sizeUpTo_index_le q
+  have hsize := C.sizeUpTo_succ' (C.index q)
+  have hlocal := C.coe_invEmbedding q
+  omega
+
+/-- Natural-successor ranks share a block precisely when their separating
+coordinate is not a boundary. The successor is required to remain in `Fin r`. -/
+theorem composition_adj_same_block_iff {r : ℕ} (C : Composition r)
+    (q q' : Fin r) (hadj : (q' : ℕ) = (q : ℕ) + 1) :
+    C.index q' = C.index q ↔ q.succ ∉ C.boundaries := by
+  rw [composition_succ_not_boundary_iff_end]
+  constructor
+  · intro hi
+    have h : (q' : ℕ) < C.sizeUpTo ((C.index q' : ℕ) + 1) :=
+      C.lt_sizeUpTo_index_succ q'
+    rw [hi, hadj] at h
+    exact h
+  · intro h
+    have hstart : C.sizeUpTo (C.index q) ≤ (q' : ℕ) := by
+      have hq := C.sizeUpTo_index_le q
+      omega
+    have hend : (q' : ℕ) < C.sizeUpTo ((C.index q : ℕ) + 1) := by omega
+    have hmem : q' ∈ Set.range (C.embedding (C.index q)) :=
+      C.mem_range_embedding_iff.mpr ⟨hstart, hend⟩
+    exact (C.mem_range_embedding_iff'.mp hmem).symm
+
+section Repacking
+
+variable {r : ℕ} (C : Composition r) (σ : Equiv.Perm (Fin C.length))
+
+/-- New position `j` receives old block `σ j`, including its full length. -/
+def reorderedComposition : Composition r where
+  blocks := List.ofFn (fun j => C.blocksFun (σ j))
+  blocks_pos := by
+    simp only [List.forall_mem_ofFn_iff]
+    intro j
+    exact C.one_le_blocksFun (σ j)
+  blocks_sum := by
+    rw [List.sum_ofFn]
+    calc
+      (∑ i, C.blocksFun (σ i)) = ∑ i, C.blocksFun i :=
+        Fintype.sum_equiv σ (fun i => C.blocksFun (σ i)) C.blocksFun (fun _ => rfl)
+      _ = r := C.sum_blocksFun
+
+@[simp] theorem reorderedComposition_length : (reorderedComposition C σ).length = C.length := by
+  simp only [reorderedComposition, Composition.length, List.length_ofFn]
+
+@[simp] theorem reorderedComposition_blocksFun
+    (j : Fin (reorderedComposition C σ).length) :
+    (reorderedComposition C σ).blocksFun j =
+      C.blocksFun (σ (Fin.cast (reorderedComposition_length C σ) j)) := by
+  let j₀ : Fin C.length := ⟨(j : ℕ), by
+    exact lt_of_lt_of_eq j.isLt (reorderedComposition_length C σ)⟩
+  have hj₀ : j₀ = Fin.cast (reorderedComposition_length C σ) j := Fin.ext rfl
+  calc
+    (reorderedComposition C σ).blocksFun j = C.blocksFun (σ j₀) := by
+      simp [Composition.blocksFun, reorderedComposition, j₀]
+    _ = C.blocksFun (σ (Fin.cast (reorderedComposition_length C σ) j)) :=
+      congrArg (fun i : Fin C.length => C.blocksFun (σ i)) hj₀
+
+/-- The old-to-new block index map. Keeping `σ` retains block identity even
+when several block lengths coincide. -/
+def repackBlockIndex : Fin C.length ≃ Fin (reorderedComposition C σ).length :=
+  σ.symm.trans (finCongr (reorderedComposition_length C σ).symm)
+
+@[simp] theorem repackBlockIndex_val (i : Fin C.length) :
+    (repackBlockIndex C σ i : ℕ) = (σ.symm i : ℕ) := rfl
+
+@[simp] theorem reorderedComposition_blocksFun_repackBlockIndex (i : Fin C.length) :
+    (reorderedComposition C σ).blocksFun (repackBlockIndex C σ i) = C.blocksFun i := by
+  rw [reorderedComposition_blocksFun]
+  change C.blocksFun (σ (σ.symm i)) = C.blocksFun i
+  rw [σ.apply_symm_apply]
+
+/-- Unpack an old rank, move its block index, cast its unchanged local
+coordinate, and repack using the new prefix sums. This is not an order embedding. -/
+def repackRanks : Equiv.Perm (Fin r) :=
+  C.blocksFinEquiv.symm.trans
+    ((Equiv.sigmaCongr (repackBlockIndex C σ)
+      (fun i => finCongr (reorderedComposition_blocksFun_repackBlockIndex C σ i).symm)).trans
+        (reorderedComposition C σ).blocksFinEquiv)
+
+theorem repackRanks_index (q : Fin r) :
+    (reorderedComposition C σ).index (repackRanks C σ q) =
+      repackBlockIndex C σ (C.index q) := by
+  exact (reorderedComposition C σ).index_embedding _ _
+
+theorem repackRanks_local (q : Fin r) :
+    ((reorderedComposition C σ).invEmbedding (repackRanks C σ q) : ℕ) =
+      (C.invEmbedding q : ℕ) := by
+  exact (reorderedComposition C σ).invEmbedding_comp _ _
+
+theorem repackRanks_val (q : Fin r) :
+    (repackRanks C σ q : ℕ) =
+      (reorderedComposition C σ).sizeUpTo (repackBlockIndex C σ (C.index q)) +
+        (C.invEmbedding q : ℕ) := rfl
+
+/-- An internal edge remains internal, and every internal edge at the new
+rank comes from an old internal edge. No cross-block adjacency is imposed. -/
+theorem repackRanks_succ_not_boundary (q : Fin r) :
+    (repackRanks C σ q).succ ∉ (reorderedComposition C σ).boundaries ↔
+      q.succ ∉ C.boundaries := by
+  simp only [composition_succ_not_boundary_iff_local, repackRanks_local,
+    repackRanks_index, reorderedComposition_blocksFun_repackBlockIndex]
+
+theorem repackRanks_adj (q q' : Fin r) (hadj : (q' : ℕ) = (q : ℕ) + 1)
+    (hnot : q.succ ∉ C.boundaries) :
+    (repackRanks C σ q' : ℕ) = (repackRanks C σ q : ℕ) + 1 := by
+  have hi := (composition_adj_same_block_iff C q q' hadj).mpr hnot
+  have hlocal : (C.invEmbedding q' : ℕ) = (C.invEmbedding q : ℕ) + 1 := by
+    simp only [Composition.coe_invEmbedding, hi]
+    have hstart := C.sizeUpTo_index_le q
+    omega
+  simp only [repackRanks_val, hi, hlocal, Nat.add_assoc]
+
+end Repacking
+
+/-- The derived composition makes repacking satisfy the previous semantic gate. -/
+theorem RankTemplate.repackRanks_forced_adj {t m k : ℕ} (T : RankTemplate t m k)
+    (σ : Equiv.Perm (Fin T.blockComposition.length))
+    (q q' : Fin (T.1 : ℕ)) (hadj : (q' : ℕ) = (q : ℕ) + 1)
+    (hq : q ∈ forcedEdges T.2.1.1 T.2.1.2) :
+    (repackRanks T.blockComposition σ q' : ℕ) =
+      (repackRanks T.blockComposition σ q : ℕ) + 1 :=
+  repackRanks_adj T.blockComposition σ q q' hadj
+    ((T.mem_forcedEdges_iff_not_blockBoundary q).mp hq)
+
+/-- Reorder whole blocks while retaining every car label and its local ranks.
+Template validity is supplied by the already-proved relabeling theorem. -/
+noncomputable def RankTemplate.reorderBlocks {t m k : ℕ} (T : RankTemplate t m k)
+    (σ : Equiv.Perm (Fin T.blockComposition.length)) : RankTemplate t m k :=
+  ⟨T.1, ⟨(fun j => repackRanks T.blockComposition σ (T.2.1.1 j),
+            fun j => repackRanks T.blockComposition σ (T.2.1.2 j)),
+    (IsRankTemplate.relabel_of_forced_adj T.2.2 (repackRanks T.blockComposition σ)
+      (T.repackRanks_forced_adj σ)).1⟩⟩
+
+@[simp] theorem RankTemplate.reorderBlocks_rank {t m k : ℕ} (T : RankTemplate t m k)
+    (σ : Equiv.Perm (Fin T.blockComposition.length)) : (T.reorderBlocks σ).1 = T.1 := rfl
+
+theorem RankTemplate.reorderBlocks_forcedEdges {t m k : ℕ} (T : RankTemplate t m k)
+    (σ : Equiv.Perm (Fin T.blockComposition.length)) :
+    forcedEdges (T.reorderBlocks σ).2.1.1 (T.reorderBlocks σ).2.1.2 =
+      (forcedEdges T.2.1.1 T.2.1.2).image (repackRanks T.blockComposition σ) :=
+  (IsRankTemplate.relabel_of_forced_adj T.2.2 (repackRanks T.blockComposition σ)
+    (T.repackRanks_forced_adj σ)).2
+
+/-- The composition derived from the new template's actual forced edges is
+exactly the reordered composition, not merely one with the same length. -/
+theorem RankTemplate.reorderBlocks_blockComposition {t m k : ℕ}
+    (T : RankTemplate t m k) (σ : Equiv.Perm (Fin T.blockComposition.length)) :
+    (T.reorderBlocks σ).blockComposition = reorderedComposition T.blockComposition σ := by
+  classical
+  have hbound : (T.reorderBlocks σ).blockComposition.boundaries =
+      (reorderedComposition T.blockComposition σ).boundaries := by
+    ext b
+    refine Fin.cases ?_ (fun q => ?_) b
+    · exact iff_of_true
+        (by
+          rw [(T.reorderBlocks σ).blockComposition_boundaries]
+          exact (T.reorderBlocks σ).zero_mem_freeGapIndices)
+        (reorderedComposition T.blockComposition σ).toCompositionAsSet.zero_mem
+    · obtain ⟨p, rfl⟩ := (repackRanks T.blockComposition σ).surjective q
+      have hedge : repackRanks T.blockComposition σ p ∈
+          forcedEdges (T.reorderBlocks σ).2.1.1 (T.reorderBlocks σ).2.1.2 ↔
+          p ∈ forcedEdges T.2.1.1 T.2.1.2 := by
+        rw [T.reorderBlocks_forcedEdges σ]
+        constructor
+        · intro h
+          obtain ⟨a, ha, heq⟩ := Finset.mem_image.mp h
+          have hap : a = p := (repackRanks T.blockComposition σ).injective heq
+          simpa only [hap] using ha
+        · intro hp
+          exact Finset.mem_image.mpr ⟨p, hp, rfl⟩
+      exact not_iff_not.mp
+        (((T.reorderBlocks σ).mem_forcedEdges_iff_not_blockBoundary _).symm.trans
+          (hedge.trans ((T.mem_forcedEdges_iff_not_blockBoundary p).trans
+            (repackRanks_succ_not_boundary T.blockComposition σ p).symm)))
+  apply (compositionEquiv (T.1 : ℕ)).injective
+  apply CompositionAsSet.ext
+  exact hbound
+
+@[simp] theorem RankTemplate.reorderBlocks_gapDimension {t m k : ℕ}
+    (T : RankTemplate t m k) (σ : Equiv.Perm (Fin T.blockComposition.length)) :
+    (T.reorderBlocks σ).gapDimension = T.gapDimension := by
+  calc
+    (T.reorderBlocks σ).gapDimension = (T.reorderBlocks σ).blockComposition.length :=
+      (T.reorderBlocks σ).blockComposition_length.symm
+    _ = (reorderedComposition T.blockComposition σ).length :=
+      congrArg Composition.length (T.reorderBlocks_blockComposition σ)
+    _ = T.blockComposition.length := reorderedComposition_length T.blockComposition σ
+    _ = T.gapDimension := T.blockComposition_length
+
+/-- Block-index transport for the actual new template, stated in natural values
+to avoid exposing a cast between its derived length and the old length. -/
+theorem RankTemplate.reorderBlocks_index {t m k : ℕ} (T : RankTemplate t m k)
+    (σ : Equiv.Perm (Fin T.blockComposition.length)) (q : Fin (T.1 : ℕ)) :
+    ((T.reorderBlocks σ).blockComposition.index (repackRanks T.blockComposition σ q) : ℕ) =
+      (σ.symm (T.blockComposition.index q) : ℕ) := by
+  have hcomp := congrArg
+    (fun C : Composition (T.1 : ℕ) =>
+      (C.index (repackRanks T.blockComposition σ q) : ℕ))
+    (T.reorderBlocks_blockComposition σ)
+  have hindex := congrArg
+    (fun i : Fin (reorderedComposition T.blockComposition σ).length => (i : ℕ))
+    (repackRanks_index T.blockComposition σ q)
+  exact hcomp.trans (hindex.trans
+    (repackBlockIndex_val T.blockComposition σ (T.blockComposition.index q)))
+
+theorem RankTemplate.reorderBlocks_local {t m k : ℕ} (T : RankTemplate t m k)
+    (σ : Equiv.Perm (Fin T.blockComposition.length)) (q : Fin (T.1 : ℕ)) :
+    ((T.reorderBlocks σ).blockComposition.invEmbedding
+        (repackRanks T.blockComposition σ q) : ℕ) = (T.blockComposition.invEmbedding q : ℕ) := by
+  rw [T.reorderBlocks_blockComposition σ]
+  exact repackRanks_local T.blockComposition σ q
+
+end MeteredParking
+
+#print axioms MeteredParking.RankTemplate.blockComposition_boundaries
+#print axioms MeteredParking.RankTemplate.blockComposition_length
+#print axioms MeteredParking.RankTemplate.mem_forcedEdges_iff_not_blockBoundary
+#print axioms MeteredParking.composition_adj_same_block_iff
+#print axioms MeteredParking.reorderedComposition_length
+#print axioms MeteredParking.reorderedComposition_blocksFun
+#print axioms MeteredParking.repackRanks_index
+#print axioms MeteredParking.repackRanks_local
+#print axioms MeteredParking.repackRanks_val
+#print axioms MeteredParking.repackRanks_succ_not_boundary
+#print axioms MeteredParking.repackRanks_adj
+#print axioms MeteredParking.RankTemplate.repackRanks_forced_adj
+#print axioms MeteredParking.RankTemplate.reorderBlocks_rank
+#print axioms MeteredParking.RankTemplate.reorderBlocks_forcedEdges
+#print axioms MeteredParking.RankTemplate.reorderBlocks_blockComposition
+#print axioms MeteredParking.RankTemplate.reorderBlocks_gapDimension
+#print axioms MeteredParking.RankTemplate.reorderBlocks_index
+#print axioms MeteredParking.RankTemplate.reorderBlocks_local
