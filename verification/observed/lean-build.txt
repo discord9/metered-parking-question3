@@ -1,0 +1,106 @@
+ℹ [8558/8559] Built AiMathLab (5.6s)
+info: AiMathLab.lean:149:0: MeteredParking.IsParking.unique {m n t : ℕ} {a p q : Fin m → Fin n} (hp : MeteredParking.IsParking t a p)
+  (hq : MeteredParking.IsParking t a q) : p = q
+info: AiMathLab.lean:150:0: MeteredParking.countSuccessfulPreferences (t m k n : ℕ) : ℕ
+info: AiMathLab.lean:151:0: 'MeteredParking.active_iff_sub_le' depends on axioms: [propext, Classical.choice, Quot.sound]
+info: AiMathLab.lean:152:0: 'MeteredParking.active_iff_oneBased' depends on axioms: [propext, Classical.choice, Quot.sound]
+info: AiMathLab.lean:153:0: 'MeteredParking.IsParking.temporal_distinct' does not depend on any axioms
+info: AiMathLab.lean:154:0: 'MeteredParking.IsParking.unique' depends on axioms: [propext, Quot.sound]
+info: AiMathLab.lean:155:0: 'MeteredParking.IsParking.preference_eq_or_active' depends on axioms: [propext, Classical.choice, Quot.sound]
+info: AiMathLab.lean:156:0: 'MeteredParking.IsParking.preference_mem_range' depends on axioms: [propext, Classical.choice, Quot.sound]
+info: AiMathLab.lean:157:0: 'MeteredParking.successfulPreference_iff_luckyCount' depends on axioms: [propext, Classical.choice, Quot.sound]
+info: AiMathLab.lean:158:0: 'MeteredParking.successfulPreference_iff_existsUnique_history' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound]
+info: AiMathLab.lean:159:0: 'MeteredParking.mem_successfulPreferences' depends on axioms: [propext, Classical.choice, Quot.sound]
+info: AiMathLab.lean:371:0: MeteredParking.IsParking.rankTemplate {m n t : ℕ} {a p : Fin m → Fin n} (hp : MeteredParking.IsParking t a p)
+  (hm : 0 < m) : MeteredParking.RankTemplate t m (MeteredParking.luckyCount a p)
+info: AiMathLab.lean:372:0: MeteredParking.IsParking.rank_forced_unit_gap {m n t : ℕ} {a p : Fin m → Fin n} (hp : MeteredParking.IsParking t a p)
+  (q : Fin (MeteredParking.outcomeSpots p).card)
+  (hq : q ∈ MeteredParking.forcedEdges (MeteredParking.preferenceRank hp) (MeteredParking.outcomeRank p)) :
+  ↑((MeteredParking.outcomeEmbedding p) ⟨↑q + 1, ⋯⟩) = ↑((MeteredParking.outcomeEmbedding p) q) + 1
+info: AiMathLab.lean:373:0: 'MeteredParking.mem_outcomeSpots' depends on axioms: [propext, Classical.choice, Quot.sound]
+info: AiMathLab.lean:374:0: 'MeteredParking.outcomeSpots_card_le' depends on axioms: [propext, Classical.choice, Quot.sound]
+info: AiMathLab.lean:375:0: 'MeteredParking.outcomeSpots_card_pos' depends on axioms: [propext, Classical.choice, Quot.sound]
+info: AiMathLab.lean:376:0: 'MeteredParking.outcomeEmbedding_outcomeRank' depends on axioms: [propext, Classical.choice, Quot.sound]
+info: AiMathLab.lean:377:0: 'MeteredParking.outcomeEmbedding_preferenceRank' depends on axioms: [propext, Classical.choice, Quot.sound]
+info: AiMathLab.lean:378:0: 'MeteredParking.outcomeRank_surjective' depends on axioms: [propext, Classical.choice, Quot.sound]
+info: AiMathLab.lean:379:0: 'MeteredParking.IsParking.of_orderEmbedding' depends on axioms: [propext, Quot.sound]
+info: AiMathLab.lean:380:0: 'MeteredParking.IsParking.rank_isParking' depends on axioms: [propext, Classical.choice, Quot.sound]
+info: AiMathLab.lean:381:0: 'MeteredParking.IsParking.rank_lucky_iff' depends on axioms: [propext, Classical.choice, Quot.sound]
+info: AiMathLab.lean:382:0: 'MeteredParking.IsParking.rank_luckyCount' depends on axioms: [propext, Classical.choice, Quot.sound]
+info: AiMathLab.lean:383:0: 'MeteredParking.rankTemplateFintype' depends on axioms: [propext, Classical.choice, Quot.sound]
+info: AiMathLab.lean:384:0: 'MeteredParking.IsParking.rank_isRankTemplate' depends on axioms: [propext, Classical.choice, Quot.sound]
+info: AiMathLab.lean:385:0: 'MeteredParking.IsParking.rankTemplate' depends on axioms: [propext, Classical.choice, Quot.sound]
+info: AiMathLab.lean:386:0: 'MeteredParking.mem_forcedEdges' depends on axioms: [propext, Classical.choice, Quot.sound]
+info: AiMathLab.lean:387:0: 'MeteredParking.succ_lt_of_mem_forcedEdges' depends on axioms: [propext, Classical.choice, Quot.sound]
+info: AiMathLab.lean:388:0: 'MeteredParking.IsParking.unit_gap_of_mem_forcedEdges' depends on axioms: [propext, Classical.choice, Quot.sound]
+info: AiMathLab.lean:389:0: 'MeteredParking.IsParking.rank_forced_unit_gap' depends on axioms: [propext, Classical.choice, Quot.sound]
+info: AiMathLab.lean:648:0: MeteredParking.successfulPreferenceEquivTemplateEmbeddings (t m k n : ℕ) (hm : 0 < m) :
+  { a // MeteredParking.SuccessfulPreference t k a } ≃ (T : MeteredParking.RankTemplate t m k) × T.LegalEmbedding n
+info: AiMathLab.lean:649:0: 'MeteredParking.HasForcedUnitGaps.spot_has_rank' depends on axioms: [propext, Classical.choice, Quot.sound]
+info: AiMathLab.lean:650:0: 'MeteredParking.IsParking.inflate' depends on axioms: [propext, Classical.choice, Quot.sound]
+info: AiMathLab.lean:651:0: 'MeteredParking.inflation_lucky_iff' does not depend on any axioms
+info: AiMathLab.lean:652:0: 'MeteredParking.luckyCount_inflate' depends on axioms: [propext, Classical.choice, Quot.sound]
+info: AiMathLab.lean:653:0: 'MeteredParking.IsParking.rank_hasForcedUnitGaps' depends on axioms: [propext, Classical.choice, Quot.sound]
+info: AiMathLab.lean:654:0: 'MeteredParking.outcomeSpots_inflate' depends on axioms: [propext, Classical.choice, Quot.sound]
+info: AiMathLab.lean:655:0: 'MeteredParking.outcomeSpots_card_inflate' depends on axioms: [propext, Classical.choice, Quot.sound]
+info: AiMathLab.lean:656:0: 'MeteredParking.outcomeEmbedding_inflate' depends on axioms: [propext, Classical.choice, Quot.sound]
+info: AiMathLab.lean:657:0: 'MeteredParking.outcomeRank_inflate' depends on axioms: [propext, Classical.choice, Quot.sound]
+info: AiMathLab.lean:658:0: 'MeteredParking.preferenceRank_inflate' depends on axioms: [propext, Classical.choice, Quot.sound]
+info: AiMathLab.lean:659:0: 'MeteredParking.legalEmbeddingFintype' depends on axioms: [propext, Classical.choice, Quot.sound]
+info: AiMathLab.lean:660:0: 'MeteredParking.inflatePreference' depends on axioms: [propext, Classical.choice, Quot.sound]
+info: AiMathLab.lean:661:0: 'MeteredParking.inflatePreference_injective' depends on axioms: [propext, Classical.choice, Quot.sound]
+info: AiMathLab.lean:662:0: 'MeteredParking.inflatePreference_surjective' depends on axioms: [propext, Classical.choice, Quot.sound]
+info: AiMathLab.lean:663:0: 'MeteredParking.successfulPreferenceEquivTemplateEmbeddings' depends on axioms: [propext, Classical.choice, Quot.sound]
+info: AiMathLab.lean:1117:0: MeteredParking.RankTemplate.card_legalEmbedding {t m k n : ℕ} (T : MeteredParking.RankTemplate t m k)
+  (hn : ↑T.fst ≤ n) : Fintype.card (T.LegalEmbedding n) = (n - ↑T.fst + T.gapDimension).choose T.gapDimension
+info: AiMathLab.lean:1118:0: 'MeteredParking.countSuccessfulPreferences_eq_sum' depends on axioms: [propext, Classical.choice, Quot.sound]
+info: AiMathLab.lean:1119:0: 'MeteredParking.RankTemplate.forcedEdges_card_le' depends on axioms: [propext, Classical.choice, Quot.sound]
+info: AiMathLab.lean:1120:0: 'MeteredParking.RankTemplate.gapDimension_pos' depends on axioms: [propext, Classical.choice, Quot.sound]
+info: AiMathLab.lean:1121:0: 'MeteredParking.RankTemplate.card_legalEmbedding_of_lt' depends on axioms: [propext, Classical.choice, Quot.sound]
+info: AiMathLab.lean:1122:0: 'MeteredParking.RankTemplate.freeGapIndices_card' depends on axioms: [propext, Classical.choice, Quot.sound]
+info: AiMathLab.lean:1123:0: 'MeteredParking.RankTemplate.zero_mem_freeGapIndices' depends on axioms: [propext, Classical.choice, Quot.sound]
+info: AiMathLab.lean:1124:0: 'MeteredParking.RankTemplate.last_mem_freeGapIndices' depends on axioms: [propext, Classical.choice, Quot.sound]
+info: AiMathLab.lean:1125:0: 'MeteredParking.embeddingGaps_sum' depends on axioms: [propext, Classical.choice, Quot.sound]
+info: AiMathLab.lean:1126:0: 'MeteredParking.RankTemplate.gapsOfEmbedding' depends on axioms: [propext, Classical.choice, Quot.sound]
+info: AiMathLab.lean:1127:0: 'MeteredParking.RankTemplate.embeddingOfGaps' depends on axioms: [propext, Classical.choice, Quot.sound]
+info: AiMathLab.lean:1128:0: 'MeteredParking.RankTemplate.embeddingOfGaps_gapsOfEmbedding' depends on axioms: [propext, Classical.choice, Quot.sound]
+info: AiMathLab.lean:1129:0: 'MeteredParking.RankTemplate.gapsOfEmbedding_embeddingOfGaps' depends on axioms: [propext, Classical.choice, Quot.sound]
+info: AiMathLab.lean:1130:0: 'MeteredParking.RankTemplate.legalEmbeddingEquivGaps' depends on axioms: [propext, Classical.choice, Quot.sound]
+info: AiMathLab.lean:1131:0: 'MeteredParking.RankTemplate.gapsEquivFree' depends on axioms: [propext, Classical.choice, Quot.sound]
+info: AiMathLab.lean:1132:0: 'MeteredParking.gapsFintype' depends on axioms: [propext, Classical.choice, Quot.sound]
+info: AiMathLab.lean:1133:0: 'MeteredParking.RankTemplate.card_gaps' depends on axioms: [propext, Classical.choice, Quot.sound]
+info: AiMathLab.lean:1134:0: 'MeteredParking.RankTemplate.card_legalEmbedding' depends on axioms: [propext, Classical.choice, Quot.sound]
+info: AiMathLab.lean:1368:0: MeteredParking.RankTemplate.gapDimension_le {t m k : ℕ} (T : MeteredParking.RankTemplate t m k) : T.gapDimension ≤ k
+info: AiMathLab.lean:1369:0: MeteredParking.exists_rankTemplate_gapDimension_eq (t m k : ℕ) (ht : 1 ≤ t) (hm : 2 ≤ m) (hk : 1 ≤ k)
+  (hkm : k ≤ m - 1) : ∃ T, T.gapDimension = k
+info: AiMathLab.lean:1370:0: 'MeteredParking.RankTemplate.gapDimension_le' depends on axioms: [propext, Classical.choice, Quot.sound]
+info: AiMathLab.lean:1371:0: 'MeteredParking.topRankPreference_lucky_iff' depends on axioms: [propext, Quot.sound]
+info: AiMathLab.lean:1372:0: 'MeteredParking.topRankPreference_isParking' depends on axioms: [propext, Quot.sound]
+info: AiMathLab.lean:1373:0: 'MeteredParking.topRankPreference_luckyCount' depends on axioms: [propext, Classical.choice, Quot.sound]
+info: AiMathLab.lean:1374:0: 'MeteredParking.mem_forcedEdges_topRankPreference' depends on axioms: [propext, Classical.choice, Quot.sound]
+info: AiMathLab.lean:1375:0: 'MeteredParking.forcedEdges_topRankPreference_card' depends on axioms: [propext, Classical.choice, Quot.sound]
+info: AiMathLab.lean:1376:0: 'MeteredParking.topRankTemplate' depends on axioms: [propext, Classical.choice, Quot.sound]
+info: AiMathLab.lean:1377:0: 'MeteredParking.topRankTemplate_gapDimension' depends on axioms: [propext, Classical.choice, Quot.sound]
+info: AiMathLab.lean:1378:0: 'MeteredParking.exists_rankTemplate_gapDimension_eq' depends on axioms: [propext, Classical.choice, Quot.sound]
+info: AiMathLab.lean:1534:0: MeteredParking.question3 : ∀ (t m k : ℕ),
+  1 ≤ t →
+    2 ≤ m →
+      1 ≤ k →
+        k ≤ m - 1 →
+          ∃ Q,
+            Q.natDegree = k ∧
+              ∀ (n : ℕ), m - 1 ≤ n → Polynomial.eval (↑n) Q = ↑(MeteredParking.countSuccessfulPreferences t m k n)
+info: AiMathLab.lean:1539:0: 'MeteredParking.RankTemplate.countPolynomial_natDegree' depends on axioms: [propext, Classical.choice, Quot.sound]
+info: AiMathLab.lean:1540:0: 'MeteredParking.RankTemplate.countPolynomial_coeff_gapDimension' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound]
+info: AiMathLab.lean:1541:0: 'MeteredParking.RankTemplate.countPolynomial_coeff_nonneg' depends on axioms: [propext, Classical.choice, Quot.sound]
+info: AiMathLab.lean:1542:0: 'MeteredParking.RankTemplate.countPolynomial_eval' depends on axioms: [propext, Classical.choice, Quot.sound]
+info: AiMathLab.lean:1543:0: 'MeteredParking.question3Polynomial_eval' depends on axioms: [propext, Classical.choice, Quot.sound]
+info: AiMathLab.lean:1544:0: 'MeteredParking.question3Polynomial_natDegree_le' depends on axioms: [propext, Classical.choice, Quot.sound]
+info: AiMathLab.lean:1545:0: 'MeteredParking.question3Polynomial_coeff_pos' depends on axioms: [propext, Classical.choice, Quot.sound]
+info: AiMathLab.lean:1546:0: 'MeteredParking.question3Polynomial_natDegree' depends on axioms: [propext, Classical.choice, Quot.sound]
+info: AiMathLab.lean:1547:0: 'MeteredParking.question3' depends on axioms: [propext, Classical.choice, Quot.sound]
+Build completed successfully (8559 jobs).

@@ -1,0 +1,305 @@
+# Polynomiality of lucky-car counts in metered parking
+
+2026-09-12
+
+**Research manuscript; formal verification complete.**
+
+Formal verification in Lean 4.31.0: complete.
+
+## Abstract
+
+For fixed meter duration \(t\ge1\), number of cars \(m\ge2\), and number of lucky cars \(1\le k\le m-1\), we prove that the number of successful preference lists on \(n\) spaces is a polynomial in \(n\) of degree exactly \(k\) for every integer \(n\ge m-1\). The departure rule is that an expiring car leaves only after the current car parks. A finite rank template records all distinct outcomes, including reused spaces, and the intervals traversed by cars. Its embeddings are counted by a binomial polynomial whose degree is the number of forced traversal components. Each component contains a lucky car, and an explicit template attains \(k\) components. An independent inclusion–exclusion proof is provided in Appendix A. Finite computational checks and the status of formal verification are reported separately from the proof.
+
+## 1. The question and the parking rule
+
+Write \([s]=\{1,\ldots,s\}\) for a positive integer \(s\), and \([0]=\varnothing\). There are \(m\) cars, labelled in arrival order, and \(n\) spaces labelled \(1,\ldots,n\). A preference list is \(\alpha=(\alpha_1,\ldots,\alpha_m)\in[n]^m\). Car \(j\) starts at \(\alpha_j\) and parks at the first unoccupied space at or to its right. If no such space exists, the list fails. *After* car \(j\) successfully parks, car \(j-t\), if its label is positive, departs. Thus, immediately before car \(j\) parks, the earlier active labels are
+
+\[
+I_j=\{\max(1,j-t),\ldots,j-1\},\qquad |I_j|=\min(t,j-1),
+\tag{1}
+\]
+
+with \(I_1=\varnothing\). In particular, car \(j-t\) is still present during car \(j\)'s search.
+
+A successful list is a metered parking function. Denote its outcomes by \(p_1,\ldots,p_m\). Car \(j\) is *lucky* if \(p_j=\alpha_j\). Different cars may have the same outcome after a space has been vacated. Let \(a_{t,m,k}(n)\) count successful *preference lists*, not merely distinct outcome lists, having exactly \(k\) lucky cars.
+
+Question 3 of Daugherty, Harris, Klein, and McClinton [1, p. 32] asks for the following polynomiality statement. There is no upper bound on \(t\).
+
+**Theorem 1.** Fix integers \(t\ge1\), \(m\ge2\), and \(1\le k\le m-1\). There exists \(Q_{t,m,k}(X)\in\mathbb Q[X]\) of degree exactly \(k\) such that
+
+\[
+a_{t,m,k}(n)=Q_{t,m,k}(n)\qquad\text{for every integer }n\ge m-1.
+\]
+
+The proof below includes \(n=m-1\); it is not only an eventual polynomiality argument. It uses the parking rule, an explicit bijection, and elementary gap counting. Appendix A is not needed for the main proof.
+
+## 2. Rank templates and their embeddings
+
+Fix \(t,m,k\) as in Theorem 1 throughout.
+
+**Definition.** An *admissible rank template* is a triple \(T=(r,u,v)\), where \(1\le r\le m\), \(u,v\in[r]^m\), and \(v\) is surjective onto \([r]\). For each \(j\), put \(A_j=\{v_i:i\in I_j\}\). Require
+
+\[
+u_j\le v_j,\qquad v_j\notin A_j,\qquad
+\{u_j,u_j+1,\ldots,v_j-1\}\subseteq A_j,
+\tag{2}
+\]
+
+and require exactly \(k\) indices to satisfy \(u_j=v_j\). The interval in (2) is empty when \(u_j=v_j\). Let \(\mathcal T_{t,m,k}\) be the set of these templates.
+
+There is no surjectivity requirement on \(u\). The set \(\mathcal T_{t,m,k}\) is finite and independent of \(n\). Moreover, (2) implies temporal distinctness: if \(i<j\) and \(j-i\le t\), then \(v_i\ne v_j\). Consequently the ranks of all cars in any one \(I_j\) are distinct, since any two of those labels differ by at most \(t\).
+
+Define
+
+\[
+E(T)=\bigcup_{j=1}^m\{u_j,\ldots,v_j-1\}\subseteq[r-1],
+\qquad c(T)=r-|E(T)|.
+\tag{3}
+\]
+
+Regard \(q\in E(T)\) as the edge \((q,q+1)\) in the path on \([r]\). Then \(c(T)\ge1\) is the number of connected components of this path with just those edges. We call them *forced traversal components*. They are not defined as maximal physically consecutive blocks of spaces.
+
+An *embedding* of \(T\) on \([n]\) is an increasing list of integers satisfying
+
+\[
+1\le x_1<\cdots<x_r\le n,\qquad x_{q+1}=x_q+1\quad(q\in E(T)).
+\tag{4}
+\]
+
+An edge outside \(E(T)\) may also have a unit gap in an embedding; it is simply not required to do so.
+
+**Proposition 1 (exact correspondence).** Successful preference lists on \([n]\) with exactly \(k\) lucky cars are in bijection with pairs \((T,x)\) consisting of \(T\in\mathcal T_{t,m,k}\) and an embedding \(x\) of \(T\). The reconstruction is
+
+\[
+\alpha_j=x_{u_j},\qquad p_j=x_{v_j}.
+\tag{5}
+\]
+
+*Proof.* First normalize a successful history. Sort all its distinct outcome positions as \(x_1<\cdots<x_r\). A position used at different times is listed only once. Every preference is among these outcomes: a lucky car prefers its own outcome, whereas an unlucky car finds its preferred space occupied by an earlier active car. Thus the preference and outcome ranks \(u_j,v_j\) exist uniquely, and \(v\) is surjective.
+
+Every integer space from \(\alpha_j\) through \(p_j-1\) is occupied at car \(j\)'s arrival, and \(p_j\) is free. In particular, all outcome ranks from \(u_j\) through \(v_j-1\) are occupied by active cars. This proves (2), and luckiness is exactly \(u_j=v_j\).
+
+Suppose \(u_j\le q<v_j\). If \(x_{q+1}>x_q+1\), the integer \(x_q+1\) lies between \(\alpha_j\) and \(p_j-1\) but is not any car's outcome. It therefore cannot be occupied at that time, contradicting the first-free-space rule. Hence \(x_{q+1}=x_q+1\). Taking the union over cars proves (4).
+
+Conversely, start with an admissible \(T\) and an embedding \(x\), and define preferences and proposed outcomes by (5). We verify the history by induction on car order. Given the earlier outcomes, the active positions at car \(j\)'s arrival are exactly \(\{x_{v_i}:i\in I_j\}\), with no duplicate active occupants. By (2), the proposed destination \(x_{v_j}\) is free. If \(u_j<v_j\), all the intervening edges are in \(E(T)\). The unit-gap conditions therefore make the entire integer interval
+
+\[
+[x_{u_j},x_{v_j}-1]\cap\mathbb Z
+=\{x_{u_j},x_{u_j+1},\ldots,x_{v_j-1}\}.
+\]
+
+Every one of these positions is occupied by (2). Thus the first free space is precisely \(x_{v_j}\). If \(u_j=v_j\), the preferred position is already free. After parking, the specified departure gives exactly the active labels needed at the next step. All cars succeed with the prescribed luckiness.
+
+Finally, surjectivity of \(v\) ensures that every \(x_q\) actually occurs as an outcome. Normalizing the reconstructed history recovers the same \(x\), \(u\), and \(v\). Conversely, reconstruction of a normalized history recovers all its preferences and outcomes. This proves both inverse identities, so preference multiplicities are preserved. Extra unit gaps outside \(E(T)\) cause no ambiguity: \(E(T)\) is recovered from \(u,v\), not from physical adjacency. ∎
+
+## 3. Counting embeddings at the required boundary
+
+**Lemma 1.** For \(T\in\mathcal T_{t,m,k}\) and every integer \(n\ge m-1\), the number of its embeddings is
+
+\[
+\binom{n-r+c(T)}{c(T)}.
+\tag{6}
+\]
+
+Here \(\binom{Y}{c}=Y(Y-1)\cdots(Y-c+1)/c!\) is a polynomial in \(Y\).
+
+*Proof.* Record both end gaps and all internal gaps:
+
+\[
+d_0=x_1-1,\qquad d_q=x_{q+1}-x_q-1\ (1\le q<r),\qquad d_r=n-x_r.
+\]
+
+They are nonnegative integers with
+
+\[
+\sum_{q=0}^r d_q=n-r,\qquad d_q=0\quad(q\in E(T)).
+\]
+
+There are \(r+1-|E(T)|=c(T)+1\) free gap variables, including both end gaps. Conversely such a gap list uniquely recovers \(x\), beginning with \(x_1=d_0+1\). For \(n\ge r\), stars and bars gives (6).
+
+Since \(r\le m\) and \(n\ge m-1\), we always have \(n\ge r-1\). The only possible case outside that counting argument is \(n=r-1\). No \(r\) distinct positions fit then, and the polynomial value is also zero:
+
+\[
+\binom{n-r+c(T)}{c(T)}=\binom{c(T)-1}{c(T)}=0,
+\]
+
+since \(c(T)\ge1\). This proves the formula throughout the required range. No assertion about arbitrary smaller \(n\) is needed. ∎
+
+## 4. The degree is exactly the number of lucky cars
+
+**Lemma 2.** Every admissible template satisfies \(c(T)\le k\).
+
+*Proof.* For each forced traversal component \(C\), choose the least car label \(j\) with \(v_j\in C\). Such a label exists because \(v\) is surjective. If \(j\) were unlucky, then \(u_j<v_j\), and all edges from \(u_j\) to \(v_j\) would be forced, placing \(u_j\) in \(C\) as well. But (2) says \(u_j=v_i\) for an earlier active car \(i<j\), contrary to the choice of \(j\). Hence \(j\) is lucky. Distinct components select distinct lucky cars, proving the bound. A component may contain more than one lucky car; no converse assignment is assumed. ∎
+
+*Proof of Theorem 1.* Define the finite sum
+
+\[
+Q_{t,m,k}(X)=\sum_{T\in\mathcal T_{t,m,k}}
+\binom{X-r(T)+c(T)}{c(T)}.
+\tag{7}
+\]
+
+It lies in \(\mathbb Q[X]\). Proposition 1 and Lemma 1 give the claimed equality for every \(n\ge m-1\). Lemma 2 gives degree at most \(k\).
+
+To attain this degree, take \(r=m\), \(v_j=j\), and
+
+\[
+u_j=\begin{cases}j,&j\le k,\\j-1,&j>k.\end{cases}
+\tag{8}
+\]
+
+Every destination is a new rank. For \(j>k\), the required occupied rank is \(j-1\), whose car is still active for every \(t\ge1\). Thus this template is admissible and has exactly \(k\) lucky cars. Its forced edges are \(\{k,k+1,\ldots,m-1\}\), so \(c(T)=k\). It has embeddings for \(n\ge m\); its zero value at \(n=m-1\) does not affect its degree.
+
+Each summand of degree \(k\) in (7) has leading coefficient \(1/k!\), and there are no higher-degree summands. Therefore
+
+\[
+[X^k]Q_{t,m,k}(X)
+=\frac{\#\{T\in\mathcal T_{t,m,k}:c(T)=k\}}{k!}>0.
+\]
+
+There is no leading-term cancellation, and the degree is exactly \(k\). ∎
+
+## 5. Boundary examples and verification status
+
+**Two cars.** For \(m=2\) and \(k=1\), the successful lists are exactly \((a,a)\) with \(1\le a\le n-1\), giving \(n-1\). At \(n=1\), the second car fails before the first can depart. This agrees with the required zero at \(n=m-1\).
+
+**Reused outcomes and unforced unit gaps.** For \(t=1,m=3,n=2\), the list \((1,1,1)\) has outcomes \((1,2,1)\) and lucky set \(\{1,3\}\). Its template has \(u=(1,1,1)\), \(v=(1,2,1)\), \(r=2\), and \(c=1\). The list \((1,1,2)\) fails at the third car. For \(t=1,m=3,n=3\), the list \((1,1,3)\) has outcomes \((1,2,3)\), \(u=(1,1,3)\), and \(v=(1,2,3)\). Here \(E(T)=\{1\}\) and \(c=2\), although all three physical spaces are consecutive. The unit gap between ranks \(2\) and \(3\) is unforced.
+
+**Long meters and one lucky car.** If \(t\ge m-1\), no car leaves before the last car parks. All successful outcomes are distinct, so \(r=m\); at \(n=m-1\) every template contributes \(\binom{c-1}{c}=0\), as the capacity constraint requires. For \(k=1\), the count is
+
+\[
+a_{t,m,1}(n)=(n-m+1)\prod_{j=2}^m\min(t,j-1)\qquad(n\ge m-1).
+\]
+
+Indeed, after the first car parks, each succeeding car must be unlucky. Inductively the active positions form a consecutive block ending at the previous outcome, so the next outcome is the next space to its right. There are \(\min(t,j-1)\) choices of occupied preference for car \(j\). For \(n\ge m\) there are \(n-m+1\) choices of the first outcome; at \(n=m-1\) there are none. This is a boundary check, not a prerequisite for the proof.
+
+**Finite checks.** The accompanying verification archive reports two finite checks. The definition-level check compares a direct simulation, which searches the current occupied spaces and then performs the departure, with a simulation using the active-label specification (1). It enumerates preference lists and counts luckiness by equality of preference and outcome. For \(m=2,\ldots,5\), \(t=1,\ldots,m\), and \(n=m-1,\ldots,2m\), it reports 1,139,145 input comparisons, 82 parameter rows, and 40 finite-difference audits. A timing mutation tests rejection of departures made too early.
+
+The template check covers \(m=2,\ldots,4\), \(t=1,\ldots,m\), and \(n=m-1,m,m+1\). It reports 4,173 directly enumerated inputs, 1,737 forward and 1,737 reverse full-history round trips, 367 template records, and 1,101 embedding-count comparisons, including 317 zero cases. Its 60 aggregate count rows agree with the definition archive. A separate mutation tests the error of declaring every physical unit gap forced. These are bounded observations, not proofs of the infinite theorem. They do not constitute execution of the inclusion–exclusion formula in Appendix A.
+
+From the paper directory, run `python3 ../verification/run_checks.py` to reproduce the bounded finite checks against the reference JSON in `../verification/expected/`. Instructions are in `../verification/README.md`; formalization commands and verification records are in `../verification/LEAN.md`. Finite checks do not prove the all-parameter statement.
+
+**Formal verification in Lean 4.31.0: complete.** The primary all-parameter Question 3 statement is formalized as `MeteredParking.question3` in `../AiMathLab.lean`, with degree exactly \(k\) for all \(n\ge m-1\). The formal proof uses the rank-template argument with the finite cover for \(c\le k\); the independent inclusion–exclusion appendix is not separately formalized. The ordinary proof, finite checks, formal verification, and external mathematical review are distinct activities.
+
+## Appendix A. An independent collision inclusion–exclusion proof
+
+This appendix gives a complete alternative argument, including its own exact-degree argument. It does not use rank templates. Retain the process and notation of Section 1, and set
+
+\[
+h_j=|I_j|,\qquad
+E_t=\{\{i,j\}:1\le i<j\le m,\ j-i\le t\}.
+\]
+
+An outcome assignment is *proper* if \(p_i\ne p_j\) for every pair in \(E_t\). These are precisely the pairs that must have different outcomes because the earlier car remains present when the later car parks. Equality at non-temporal pairs is allowed.
+
+### A.1. Finite data and exact recovery
+
+Let \(\mathcal D\) consist of the following finite data \(D\), independent of \(n\): a set \(K\subseteq[m]\) of size \(k\) containing \(1\), and, for each \(j\notin K\), an integer \(1\le d_j\le h_j\) and an injection \(f_j:[d_j]\longrightarrow I_j\). Impose the equations
+
+\[
+p_{f_j(s)}=p_j-s\qquad(j\notin K,\ 1\le s\le d_j).
+\tag{9}
+\]
+
+Successful preference lists correspond bijectively to pairs \((D,p)\) with \(p\in[n]^m\) proper and satisfying (9).
+
+For the forward map, take the actual lucky set \(K\) and displacements \(d_j=p_j-\alpha_j\). Every skipped position is occupied by a unique active car. Hence \(d_j\le h_j\), and the occupant of \(p_j-s\) uniquely defines \(f_j(s)\). These occupants are distinct, so \(f_j\) is injective.
+
+Conversely, define \(\alpha_j=p_j\) for \(j\in K\) and \(\alpha_j=p_j-d_j\) otherwise. For an unlucky car, the equation with \(s=d_j\) gives
+
+\[
+\alpha_j=p_{f_j(d_j)}\in[n],
+\]
+
+so the lower preference bound is enforced, not silently omitted. By induction on \(j\), properness makes \(p_j\) free at arrival, while (9) occupies every integer from \(\alpha_j\) through \(p_j-1\) with the specified active cars. Thus the outcome is exactly \(p_j\). The prescribed departures preserve the induction. The lucky set and all occupants are uniquely recovered, proving both inverse identities.
+
+### A.2. Inclusion–exclusion and component widths
+
+For \(F\subseteq E_t\), add the collision equations
+
+\[
+p_i=p_j\qquad(\{i,j\}\in F).
+\tag{10}
+\]
+
+An inconsistent system contributes zero. For a consistent system, form its undirected equation graph on all car labels, including isolated vertices. Within a connected component \(C\), the difference equations determine integer offsets \(b_v\) up to a common translation: fix one vertex and propagate differences along paths; consistency makes the result path-independent. Normalize \(\min_{v\in C}b_v=0\) and write \(w_C=\max_{v\in C}b_v\). All solutions in that component are
+
+\[
+p_v=x_C+b_v\quad(v\in C),\qquad 1\le x_C\le n-w_C.
+\]
+
+Thus there are \((n-w_C)_+=\max(n-w_C,0)\) choices. Different components may overlap in street positions in an inclusion–exclusion term; no disjointness restriction is imposed there. Finite inclusion–exclusion gives, for every \(n\ge1\),
+
+\[
+a_{t,m,k}(n)=\sum_{D\in\mathcal D}
+\sum_{\substack{F\subseteq E_t\\(D,F)\text{ consistent}}}
+(-1)^{|F|}\prod_C(n-w_C)_+.
+\tag{11}
+\]
+
+Here and below \(C\) runs over the components of the equation graph for \((D,F)\).
+
+There are at most \(k\) components. Indeed, if the least-labelled vertex \(j\) of a component were unlucky, its equation with \(s=1\) would connect it to \(f_j(1)<j\), a contradiction. Each component therefore contains a different lucky vertex.
+
+We also have the sharp width bound
+
+\[
+w_C\le |C|-1\le m-1.
+\tag{12}
+\]
+
+To prove it, consider, for each unlucky \(j\), the block of labels
+
+\[
+B_j=\{j,f_j(1),\ldots,f_j(d_j)\}.
+\]
+
+Its offset values are the whole integer interval \(\{b_j-d_j,\ldots,b_j\}\). Each added collision edge has a singleton offset set. These blocks and edges connect the equation component. If an integer height strictly between its minimum and maximum were missing, every interval block would lie entirely on one side of that height, and no block or equality edge could connect the two sides. This contradicts connectedness. Isolated vertices have width zero directly. Thus all \(w_C+1\) offset heights occur among the \(|C|\) labels, proving (12).
+
+For \(n\ge m-1\), (12) gives \((n-w_C)_+=n-w_C\), including the zero case \(n=w_C=m-1\). Consequently the finite polynomial
+
+\[
+R_{t,m,k}(X)=\sum_{D\in\mathcal D}
+\sum_{\substack{F\subseteq E_t\\(D,F)\text{ consistent}}}
+(-1)^{|F|}\prod_C(X-w_C)
+\tag{13}
+\]
+
+agrees with \(a_{t,m,k}(n)\) for all required \(n\). The component bound gives degree at most \(k\). Both outcome boundaries were enforced by the translation interval, and the preference boundaries by exact recovery above.
+
+### A.3. Exact degree without the primary proof
+
+Set \(\ell=m-k+1\). For \(n\ge m\), choose
+
+\[
+1\le x_1<\cdots<x_k\le n-\ell+1,
+\]
+
+and define
+
+\[
+\begin{aligned}
+\alpha_1&=x_1,\\
+\alpha_j&=x_1+j-2 &&(2\le j\le\ell),\\
+\alpha_{\ell+i-1}&=x_i+\ell-1 &&(2\le i\le k).
+\end{aligned}
+\]
+
+The first \(\ell\) cars park successively at \(x_1,\ldots,x_1+\ell-1\). Each after the first prefers the immediate predecessor's still-occupied position, since \(t\ge1\), and then takes the next, never-used space. These \(\ell-1\) cars are unlucky. The remaining \(k-1\) cars prefer distinct positions larger than all earlier outcomes and are lucky. All positions lie in \([n]\). Distinct \(x\)-tuples yield distinct preference lists, so
+
+\[
+a_{t,m,k}(n)\ge\binom{n-\ell+1}{k}
+=\binom{n-m+k}{k}\qquad(n\ge m).
+\]
+
+The lower bound grows with leading term \(n^k/k!\). Since (13) already supplies a polynomial of degree at most \(k\) agreeing with the count, its degree must be exactly \(k\) and its leading coefficient positive. This completes the independent proof of Theorem 1.
+
+## Literature scope and disclosure
+
+The source question is Question 3 on page 32 of the 2025 journal version of [1]. A supplied literature audit dated 2026-09-12 reports that no complete prior answer was found among the publicly searchable materials it could verify. That search was bounded: it was neither an exhaustive citation-database review nor direct confirmation from the original authors, and it left inaccessible material unresolved. It cannot exclude unpublished, unindexed, or inaccessible answers. No first-solution or definitive novelty claim is made here. The detailed audit is supplied separately at `../literature/question3_literature_audit_2026-09-12.md`; this manuscript does not claim independent full-text review of the other works listed there.
+
+This publicly available research manuscript was drafted and reviewed with AI assistance. It has not undergone external human peer review or journal acceptance. Internal AI approval is not offered as mathematical authority.
+
+## Bibliography
+
+[1] Spencer Daugherty, Pamela E. Harris, Ian Klein, and Matt McClinton. *Metered Parking Functions*. **Integers 25** (2025), Paper A73. Question 3, p. 32. DOI: [10.5281/zenodo.16881806](https://doi.org/10.5281/zenodo.16881806). Preprint: [arXiv:2406.12941](https://arxiv.org/abs/2406.12941).

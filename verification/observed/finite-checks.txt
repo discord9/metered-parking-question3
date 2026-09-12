@@ -1,0 +1,1 @@
+Portable finite verification passed: definition 82 rows / 1139145 inputs / 40 audits; template 60 raw rows / 27 counters / 1737 pairs / 367 templates / 1101 embedding counts. This is finite verification, not Lean.

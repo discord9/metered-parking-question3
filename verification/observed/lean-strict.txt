@@ -1,0 +1,104 @@
+MeteredParking.IsParking.unique {m n t : ℕ} {a p q : Fin m → Fin n} (hp : MeteredParking.IsParking t a p)
+  (hq : MeteredParking.IsParking t a q) : p = q
+MeteredParking.countSuccessfulPreferences (t m k n : ℕ) : ℕ
+'MeteredParking.active_iff_sub_le' depends on axioms: [propext, Classical.choice, Quot.sound]
+'MeteredParking.active_iff_oneBased' depends on axioms: [propext, Classical.choice, Quot.sound]
+'MeteredParking.IsParking.temporal_distinct' does not depend on any axioms
+'MeteredParking.IsParking.unique' depends on axioms: [propext, Quot.sound]
+'MeteredParking.IsParking.preference_eq_or_active' depends on axioms: [propext, Classical.choice, Quot.sound]
+'MeteredParking.IsParking.preference_mem_range' depends on axioms: [propext, Classical.choice, Quot.sound]
+'MeteredParking.successfulPreference_iff_luckyCount' depends on axioms: [propext, Classical.choice, Quot.sound]
+'MeteredParking.successfulPreference_iff_existsUnique_history' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound]
+'MeteredParking.mem_successfulPreferences' depends on axioms: [propext, Classical.choice, Quot.sound]
+MeteredParking.IsParking.rankTemplate {m n t : ℕ} {a p : Fin m → Fin n} (hp : MeteredParking.IsParking t a p)
+  (hm : 0 < m) : MeteredParking.RankTemplate t m (MeteredParking.luckyCount a p)
+MeteredParking.IsParking.rank_forced_unit_gap {m n t : ℕ} {a p : Fin m → Fin n} (hp : MeteredParking.IsParking t a p)
+  (q : Fin (MeteredParking.outcomeSpots p).card)
+  (hq : q ∈ MeteredParking.forcedEdges (MeteredParking.preferenceRank hp) (MeteredParking.outcomeRank p)) :
+  ↑((MeteredParking.outcomeEmbedding p) ⟨↑q + 1, ⋯⟩) = ↑((MeteredParking.outcomeEmbedding p) q) + 1
+'MeteredParking.mem_outcomeSpots' depends on axioms: [propext, Classical.choice, Quot.sound]
+'MeteredParking.outcomeSpots_card_le' depends on axioms: [propext, Classical.choice, Quot.sound]
+'MeteredParking.outcomeSpots_card_pos' depends on axioms: [propext, Classical.choice, Quot.sound]
+'MeteredParking.outcomeEmbedding_outcomeRank' depends on axioms: [propext, Classical.choice, Quot.sound]
+'MeteredParking.outcomeEmbedding_preferenceRank' depends on axioms: [propext, Classical.choice, Quot.sound]
+'MeteredParking.outcomeRank_surjective' depends on axioms: [propext, Classical.choice, Quot.sound]
+'MeteredParking.IsParking.of_orderEmbedding' depends on axioms: [propext, Quot.sound]
+'MeteredParking.IsParking.rank_isParking' depends on axioms: [propext, Classical.choice, Quot.sound]
+'MeteredParking.IsParking.rank_lucky_iff' depends on axioms: [propext, Classical.choice, Quot.sound]
+'MeteredParking.IsParking.rank_luckyCount' depends on axioms: [propext, Classical.choice, Quot.sound]
+'MeteredParking.rankTemplateFintype' depends on axioms: [propext, Classical.choice, Quot.sound]
+'MeteredParking.IsParking.rank_isRankTemplate' depends on axioms: [propext, Classical.choice, Quot.sound]
+'MeteredParking.IsParking.rankTemplate' depends on axioms: [propext, Classical.choice, Quot.sound]
+'MeteredParking.mem_forcedEdges' depends on axioms: [propext, Classical.choice, Quot.sound]
+'MeteredParking.succ_lt_of_mem_forcedEdges' depends on axioms: [propext, Classical.choice, Quot.sound]
+'MeteredParking.IsParking.unit_gap_of_mem_forcedEdges' depends on axioms: [propext, Classical.choice, Quot.sound]
+'MeteredParking.IsParking.rank_forced_unit_gap' depends on axioms: [propext, Classical.choice, Quot.sound]
+MeteredParking.successfulPreferenceEquivTemplateEmbeddings (t m k n : ℕ) (hm : 0 < m) :
+  { a // MeteredParking.SuccessfulPreference t k a } ≃ (T : MeteredParking.RankTemplate t m k) × T.LegalEmbedding n
+'MeteredParking.HasForcedUnitGaps.spot_has_rank' depends on axioms: [propext, Classical.choice, Quot.sound]
+'MeteredParking.IsParking.inflate' depends on axioms: [propext, Classical.choice, Quot.sound]
+'MeteredParking.inflation_lucky_iff' does not depend on any axioms
+'MeteredParking.luckyCount_inflate' depends on axioms: [propext, Classical.choice, Quot.sound]
+'MeteredParking.IsParking.rank_hasForcedUnitGaps' depends on axioms: [propext, Classical.choice, Quot.sound]
+'MeteredParking.outcomeSpots_inflate' depends on axioms: [propext, Classical.choice, Quot.sound]
+'MeteredParking.outcomeSpots_card_inflate' depends on axioms: [propext, Classical.choice, Quot.sound]
+'MeteredParking.outcomeEmbedding_inflate' depends on axioms: [propext, Classical.choice, Quot.sound]
+'MeteredParking.outcomeRank_inflate' depends on axioms: [propext, Classical.choice, Quot.sound]
+'MeteredParking.preferenceRank_inflate' depends on axioms: [propext, Classical.choice, Quot.sound]
+'MeteredParking.legalEmbeddingFintype' depends on axioms: [propext, Classical.choice, Quot.sound]
+'MeteredParking.inflatePreference' depends on axioms: [propext, Classical.choice, Quot.sound]
+'MeteredParking.inflatePreference_injective' depends on axioms: [propext, Classical.choice, Quot.sound]
+'MeteredParking.inflatePreference_surjective' depends on axioms: [propext, Classical.choice, Quot.sound]
+'MeteredParking.successfulPreferenceEquivTemplateEmbeddings' depends on axioms: [propext, Classical.choice, Quot.sound]
+MeteredParking.RankTemplate.card_legalEmbedding {t m k n : ℕ} (T : MeteredParking.RankTemplate t m k)
+  (hn : ↑T.fst ≤ n) : Fintype.card (T.LegalEmbedding n) = (n - ↑T.fst + T.gapDimension).choose T.gapDimension
+'MeteredParking.countSuccessfulPreferences_eq_sum' depends on axioms: [propext, Classical.choice, Quot.sound]
+'MeteredParking.RankTemplate.forcedEdges_card_le' depends on axioms: [propext, Classical.choice, Quot.sound]
+'MeteredParking.RankTemplate.gapDimension_pos' depends on axioms: [propext, Classical.choice, Quot.sound]
+'MeteredParking.RankTemplate.card_legalEmbedding_of_lt' depends on axioms: [propext, Classical.choice, Quot.sound]
+'MeteredParking.RankTemplate.freeGapIndices_card' depends on axioms: [propext, Classical.choice, Quot.sound]
+'MeteredParking.RankTemplate.zero_mem_freeGapIndices' depends on axioms: [propext, Classical.choice, Quot.sound]
+'MeteredParking.RankTemplate.last_mem_freeGapIndices' depends on axioms: [propext, Classical.choice, Quot.sound]
+'MeteredParking.embeddingGaps_sum' depends on axioms: [propext, Classical.choice, Quot.sound]
+'MeteredParking.RankTemplate.gapsOfEmbedding' depends on axioms: [propext, Classical.choice, Quot.sound]
+'MeteredParking.RankTemplate.embeddingOfGaps' depends on axioms: [propext, Classical.choice, Quot.sound]
+'MeteredParking.RankTemplate.embeddingOfGaps_gapsOfEmbedding' depends on axioms: [propext, Classical.choice, Quot.sound]
+'MeteredParking.RankTemplate.gapsOfEmbedding_embeddingOfGaps' depends on axioms: [propext, Classical.choice, Quot.sound]
+'MeteredParking.RankTemplate.legalEmbeddingEquivGaps' depends on axioms: [propext, Classical.choice, Quot.sound]
+'MeteredParking.RankTemplate.gapsEquivFree' depends on axioms: [propext, Classical.choice, Quot.sound]
+'MeteredParking.gapsFintype' depends on axioms: [propext, Classical.choice, Quot.sound]
+'MeteredParking.RankTemplate.card_gaps' depends on axioms: [propext, Classical.choice, Quot.sound]
+'MeteredParking.RankTemplate.card_legalEmbedding' depends on axioms: [propext, Classical.choice, Quot.sound]
+MeteredParking.RankTemplate.gapDimension_le {t m k : ℕ} (T : MeteredParking.RankTemplate t m k) : T.gapDimension ≤ k
+MeteredParking.exists_rankTemplate_gapDimension_eq (t m k : ℕ) (ht : 1 ≤ t) (hm : 2 ≤ m) (hk : 1 ≤ k)
+  (hkm : k ≤ m - 1) : ∃ T, T.gapDimension = k
+'MeteredParking.RankTemplate.gapDimension_le' depends on axioms: [propext, Classical.choice, Quot.sound]
+'MeteredParking.topRankPreference_lucky_iff' depends on axioms: [propext, Quot.sound]
+'MeteredParking.topRankPreference_isParking' depends on axioms: [propext, Quot.sound]
+'MeteredParking.topRankPreference_luckyCount' depends on axioms: [propext, Classical.choice, Quot.sound]
+'MeteredParking.mem_forcedEdges_topRankPreference' depends on axioms: [propext, Classical.choice, Quot.sound]
+'MeteredParking.forcedEdges_topRankPreference_card' depends on axioms: [propext, Classical.choice, Quot.sound]
+'MeteredParking.topRankTemplate' depends on axioms: [propext, Classical.choice, Quot.sound]
+'MeteredParking.topRankTemplate_gapDimension' depends on axioms: [propext, Classical.choice, Quot.sound]
+'MeteredParking.exists_rankTemplate_gapDimension_eq' depends on axioms: [propext, Classical.choice, Quot.sound]
+MeteredParking.question3 : ∀ (t m k : ℕ),
+  1 ≤ t →
+    2 ≤ m →
+      1 ≤ k →
+        k ≤ m - 1 →
+          ∃ Q,
+            Q.natDegree = k ∧
+              ∀ (n : ℕ), m - 1 ≤ n → Polynomial.eval (↑n) Q = ↑(MeteredParking.countSuccessfulPreferences t m k n)
+'MeteredParking.RankTemplate.countPolynomial_natDegree' depends on axioms: [propext, Classical.choice, Quot.sound]
+'MeteredParking.RankTemplate.countPolynomial_coeff_gapDimension' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound]
+'MeteredParking.RankTemplate.countPolynomial_coeff_nonneg' depends on axioms: [propext, Classical.choice, Quot.sound]
+'MeteredParking.RankTemplate.countPolynomial_eval' depends on axioms: [propext, Classical.choice, Quot.sound]
+'MeteredParking.question3Polynomial_eval' depends on axioms: [propext, Classical.choice, Quot.sound]
+'MeteredParking.question3Polynomial_natDegree_le' depends on axioms: [propext, Classical.choice, Quot.sound]
+'MeteredParking.question3Polynomial_coeff_pos' depends on axioms: [propext, Classical.choice, Quot.sound]
+'MeteredParking.question3Polynomial_natDegree' depends on axioms: [propext, Classical.choice, Quot.sound]
+'MeteredParking.question3' depends on axioms: [propext, Classical.choice, Quot.sound]
