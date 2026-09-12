@@ -2023,3 +2023,309 @@ end MeteredParking
 #print axioms MeteredParking.RankTemplate.reorderBlocks_gapDimension
 #print axioms MeteredParking.RankTemplate.reorderBlocks_index
 #print axioms MeteredParking.RankTemplate.reorderBlocks_local
+
+/-!
+## Reassembly and whole-block car leaders
+
+Length identifications below preserve natural values. They are not block
+permutations: the latter are kept separately, including when lengths coincide.
+Undoing a reordering reconstructs both the composition and every rank from its
+block index and local coordinate. Leaders are minima of whole-block car fibers;
+no luckiness assertion or canonical-template correspondence is assumed here.
+-/
+
+namespace MeteredParking
+
+private theorem composition_eq_of_blocksFun_cast {r : ℕ} (C D : Composition r)
+    (hlen : C.length = D.length)
+    (hblocks : ∀ i : Fin C.length,
+      C.blocksFun i = D.blocksFun (Fin.cast hlen i)) : C = D := by
+  have ofFn_cast : ∀ {a b : ℕ} (h : a = b) (f : Fin b → ℕ),
+      List.ofFn (fun i : Fin a => f (Fin.cast h i)) = List.ofFn f := by
+    intro a b h f
+    subst b
+    rfl
+  apply Composition.ext
+  calc
+    C.blocks = List.ofFn C.blocksFun := C.ofFn_blocksFun.symm
+    _ = List.ofFn (fun i => D.blocksFun (Fin.cast hlen i)) :=
+      congrArg List.ofFn (funext hblocks)
+    _ = List.ofFn D.blocksFun := ofFn_cast hlen D.blocksFun
+    _ = D.blocks := D.ofFn_blocksFun
+
+private theorem composition_rank_eq_of_coordinates {r : ℕ} (C : Composition r)
+    (p q : Fin r) (hi : (C.index p : ℕ) = (C.index q : ℕ))
+    (ha : (C.invEmbedding p : ℕ) = (C.invEmbedding q : ℕ)) : p = q := by
+  have hstart : C.sizeUpTo (C.index p : ℕ) = C.sizeUpTo (C.index q : ℕ) :=
+    congrArg C.sizeUpTo hi
+  have hp := congrArg Fin.val (C.embedding_comp_inv p)
+  have hq := congrArg Fin.val (C.embedding_comp_inv q)
+  simp only [Composition.coe_embedding] at hp hq
+  apply Fin.ext
+  omega
+
+theorem reorderedComposition_refl {r : ℕ} (C : Composition r) :
+    reorderedComposition C (Equiv.refl _) = C := by
+  apply Composition.ext
+  exact C.ofFn_blocksFun
+
+theorem repackRanks_refl {r : ℕ} (C : Composition r) (q : Fin r) :
+    repackRanks C (Equiv.refl _) q = q := by
+  let p := repackRanks C (Equiv.refl _) q
+  have hc := reorderedComposition_refl C
+  apply composition_rank_eq_of_coordinates C p q
+  · have htransport := congrArg (fun D : Composition r => (D.index p : ℕ)) hc
+    have hindex := congrArg Fin.val (repackRanks_index C (Equiv.refl _) q)
+    exact htransport.symm.trans
+      (hindex.trans (repackBlockIndex_val C (Equiv.refl _) (C.index q)))
+  · have htransport := congrArg (fun D : Composition r => (D.invEmbedding p : ℕ)) hc
+    exact htransport.symm.trans (repackRanks_local C (Equiv.refl _) q)
+
+theorem RankTemplate.reorderBlocks_refl {t m k : ℕ} (T : RankTemplate t m k) :
+    T.reorderBlocks (Equiv.refl _) = T := by
+  refine Sigma.ext rfl (heq_of_eq ?_)
+  apply Subtype.ext
+  apply Prod.ext
+  · funext j
+    exact repackRanks_refl T.blockComposition (T.2.1.1 j)
+  · funext j
+    exact repackRanks_refl T.blockComposition (T.2.1.2 j)
+
+/-- The actual derived lengths agree; this equality induces only value-preserving casts. -/
+theorem RankTemplate.reorderBlocks_length {t m k : ℕ} (T : RankTemplate t m k)
+    (σ : Equiv.Perm (Fin T.blockComposition.length)) :
+    (T.reorderBlocks σ).blockComposition.length = T.blockComposition.length :=
+  ((T.reorderBlocks σ).blockComposition_length.trans (T.reorderBlocks_gapDimension σ)).trans
+    T.blockComposition_length.symm
+
+/-- Identify the new length with the old length without permuting block positions. -/
+noncomputable def RankTemplate.reorderLengthEquiv {t m k : ℕ} (T : RankTemplate t m k)
+    (σ : Equiv.Perm (Fin T.blockComposition.length)) :
+    Fin (T.reorderBlocks σ).blockComposition.length ≃ Fin T.blockComposition.length :=
+  finCongr (T.reorderBlocks_length σ)
+
+theorem RankTemplate.reorderLengthEquiv_val {t m k : ℕ} (T : RankTemplate t m k)
+    (σ : Equiv.Perm (Fin T.blockComposition.length))
+    (i : Fin (T.reorderBlocks σ).blockComposition.length) :
+    (T.reorderLengthEquiv σ i : ℕ) = (i : ℕ) :=
+  finCongr_apply_coe (T.reorderBlocks_length σ) i
+
+private theorem reordered_blocksFun_transport {r : ℕ} (C A : Composition r)
+    (σ : Equiv.Perm (Fin C.length)) (h : A = reorderedComposition C σ)
+    (e : Fin A.length → Fin C.length) (he : ∀ i, (e i : ℕ) = (i : ℕ))
+    (i : Fin A.length) : A.blocksFun i = C.blocksFun (σ (e i)) := by
+  subst A
+  refine (reorderedComposition_blocksFun C σ i).trans ?_
+  apply congrArg (fun b : Fin C.length => C.blocksFun (σ b))
+  exact Fin.ext (he i).symm
+
+/-- Indexed block-size transport for the actual derived composition. -/
+theorem RankTemplate.reorderBlocks_blocksFun {t m k : ℕ} (T : RankTemplate t m k)
+    (σ : Equiv.Perm (Fin T.blockComposition.length))
+    (i : Fin (T.reorderBlocks σ).blockComposition.length) :
+    (T.reorderBlocks σ).blockComposition.blocksFun i =
+      T.blockComposition.blocksFun (σ (T.reorderLengthEquiv σ i)) := by
+  exact reordered_blocksFun_transport T.blockComposition (T.reorderBlocks σ).blockComposition
+    σ (T.reorderBlocks_blockComposition σ) (T.reorderLengthEquiv σ)
+    (T.reorderLengthEquiv_val σ) i
+
+/-- The inverse block permutation transported to the new template's actual length.
+Its input is again a new position and its output an old position. -/
+noncomputable def RankTemplate.undoBlockPermutation {t m k : ℕ} (T : RankTemplate t m k)
+    (σ : Equiv.Perm (Fin T.blockComposition.length)) :
+    Equiv.Perm (Fin (T.reorderBlocks σ).blockComposition.length) :=
+  ((T.reorderLengthEquiv σ).trans σ.symm).trans (T.reorderLengthEquiv σ).symm
+
+private theorem undo_block_index_cancel {a b : ℕ} (e : Fin a ≃ Fin b)
+    (σ : Equiv.Perm (Fin b)) (i : Fin a) :
+    σ (e (((e.trans σ.symm).trans e.symm) i)) = e i := by
+  exact (congrArg σ (e.apply_symm_apply (σ.symm (e i)))).trans
+    (σ.apply_symm_apply (e i))
+
+private theorem undo_block_index_symm {a b : ℕ} (e : Fin a ≃ Fin b)
+    (σ : Equiv.Perm (Fin b)) (i : Fin a) :
+    e (((e.trans σ.symm).trans e.symm).symm i) = σ (e i) := by
+  exact e.apply_symm_apply (σ (e i))
+
+private theorem fin_comp_eq_cast_small {a b c : ℕ} (h : a = c)
+    (e : Fin b → Fin c) (f : Fin a → Fin b)
+    (he : ∀ j, (e j : ℕ) = (j : ℕ))
+    (hf : ∀ i, (f i : ℕ) = (i : ℕ)) (i : Fin a) :
+    e (f i) = Fin.cast h i := by
+  apply Fin.ext
+  exact (he (f i)).trans (hf i)
+
+/-- Undoing the block order recovers every block length in its original position. -/
+theorem RankTemplate.reorderBlocks_inverse_blockComposition {t m k : ℕ}
+    (T : RankTemplate t m k) (σ : Equiv.Perm (Fin T.blockComposition.length)) :
+    ((T.reorderBlocks σ).reorderBlocks (T.undoBlockPermutation σ)).blockComposition =
+      T.blockComposition := by
+  let U := T.reorderBlocks σ
+  let η := T.undoBlockPermutation σ
+  let e := T.reorderLengthEquiv σ
+  let f := U.reorderLengthEquiv η
+  have hlen : (U.reorderBlocks η).blockComposition.length = T.blockComposition.length :=
+    (U.reorderBlocks_length η).trans (T.reorderBlocks_length σ)
+  change (U.reorderBlocks η).blockComposition = T.blockComposition
+  apply composition_eq_of_blocksFun_cast _ _ hlen
+  intro i
+  have hvalue : e (f i) = Fin.cast hlen i :=
+    fin_comp_eq_cast_small
+      (a := (U.reorderBlocks η).blockComposition.length)
+      (b := U.blockComposition.length) (c := T.blockComposition.length)
+      hlen e f (T.reorderLengthEquiv_val σ) (U.reorderLengthEquiv_val η) i
+  have hi : σ (e (η (f i))) = Fin.cast hlen i :=
+    (undo_block_index_cancel e σ (f i)).trans hvalue
+  calc
+    (U.reorderBlocks η).blockComposition.blocksFun i =
+        U.blockComposition.blocksFun (η (f i)) := U.reorderBlocks_blocksFun η i
+    _ = T.blockComposition.blocksFun (σ (e (η (f i)))) := T.reorderBlocks_blocksFun σ _
+    _ = T.blockComposition.blocksFun (Fin.cast hlen i) := congrArg T.blockComposition.blocksFun hi
+
+/-- Reassembly of ranks uses both the restored composition and the transported
+index/local-coordinate pair, not just the number of blocks. -/
+theorem RankTemplate.repackRanks_inverse {t m k : ℕ} (T : RankTemplate t m k)
+    (σ : Equiv.Perm (Fin T.blockComposition.length)) (q : Fin (T.1 : ℕ)) :
+    repackRanks (T.reorderBlocks σ).blockComposition (T.undoBlockPermutation σ)
+      (repackRanks T.blockComposition σ q) = q := by
+  let U := T.reorderBlocks σ
+  let η := T.undoBlockPermutation σ
+  let e := T.reorderLengthEquiv σ
+  let p := repackRanks T.blockComposition σ q
+  let z := repackRanks U.blockComposition η p
+  have hi : e (U.blockComposition.index p) = σ.symm (T.blockComposition.index q) := by
+    apply Fin.ext
+    exact T.reorderBlocks_index σ q
+  have hbackIndex : e (η.symm (U.blockComposition.index p)) = T.blockComposition.index q :=
+    (undo_block_index_symm e σ (U.blockComposition.index p)).trans
+      ((congrArg σ hi).trans (σ.apply_symm_apply (T.blockComposition.index q)))
+  have hback : (η.symm (U.blockComposition.index p) : ℕ) =
+      (T.blockComposition.index q : ℕ) :=
+    (T.reorderLengthEquiv_val σ (η.symm (U.blockComposition.index p))).symm.trans
+      (congrArg Fin.val hbackIndex)
+  have hc : (U.reorderBlocks η).blockComposition = T.blockComposition :=
+    T.reorderBlocks_inverse_blockComposition σ
+  apply composition_rank_eq_of_coordinates T.blockComposition z q
+  · have htransport := congrArg (fun C : Composition (T.1 : ℕ) => (C.index z : ℕ)) hc
+    exact htransport.symm.trans ((U.reorderBlocks_index η p).trans hback)
+  · have htransport := congrArg
+      (fun C : Composition (T.1 : ℕ) => (C.invEmbedding z : ℕ)) hc
+    exact htransport.symm.trans
+      ((U.reorderBlocks_local η p).trans (T.reorderBlocks_local σ q))
+
+/-- Concrete inverse cancellation, retaining all labeled preference and outcome ranks. -/
+theorem RankTemplate.reorderBlocks_inverse {t m k : ℕ} (T : RankTemplate t m k)
+    (σ : Equiv.Perm (Fin T.blockComposition.length)) :
+    (T.reorderBlocks σ).reorderBlocks (T.undoBlockPermutation σ) = T := by
+  refine Sigma.ext rfl (heq_of_eq ?_)
+  apply Subtype.ext
+  apply Prod.ext
+  · funext j
+    exact T.repackRanks_inverse σ (T.2.1.1 j)
+  · funext j
+    exact T.repackRanks_inverse σ (T.2.1.2 j)
+
+/-- All cars whose outcomes are in a given whole block. Car labels are unchanged. -/
+noncomputable def RankTemplate.blockCarFiber {t m k : ℕ} (T : RankTemplate t m k)
+    (i : Fin T.blockComposition.length) : Finset (Fin m) := by
+  classical
+  exact Finset.univ.filter (fun j => T.blockComposition.index (T.2.1.2 j) = i)
+
+theorem RankTemplate.mem_blockCarFiber {t m k : ℕ} (T : RankTemplate t m k)
+    (i : Fin T.blockComposition.length) (j : Fin m) :
+    j ∈ T.blockCarFiber i ↔ T.blockComposition.index (T.2.1.2 j) = i := by
+  classical
+  simp only [RankTemplate.blockCarFiber, Finset.mem_filter, Finset.mem_univ, true_and]
+
+theorem RankTemplate.blockCarFiber_nonempty {t m k : ℕ} (T : RankTemplate t m k)
+    (i : Fin T.blockComposition.length) : (T.blockCarFiber i).Nonempty := by
+  let a : Fin (T.blockComposition.blocksFun i) := ⟨0, T.blockComposition.one_le_blocksFun i⟩
+  have hv : Function.Surjective T.2.1.2 := T.2.2.2.2.1
+  obtain ⟨j, hj⟩ := hv (T.blockComposition.embedding i a)
+  refine ⟨j, (T.mem_blockCarFiber i j).mpr ?_⟩
+  rw [hj]
+  exact T.blockComposition.index_embedding i a
+
+/-- The least original car label in a whole block, with no luckiness claim. -/
+noncomputable def RankTemplate.blockLeader {t m k : ℕ} (T : RankTemplate t m k)
+    (i : Fin T.blockComposition.length) : Fin m :=
+  (T.blockCarFiber i).min' (T.blockCarFiber_nonempty i)
+
+theorem RankTemplate.blockLeader_mem {t m k : ℕ} (T : RankTemplate t m k)
+    (i : Fin T.blockComposition.length) : T.blockLeader i ∈ T.blockCarFiber i :=
+  Finset.min'_mem _ _
+
+theorem RankTemplate.blockLeader_le {t m k : ℕ} (T : RankTemplate t m k)
+    (i : Fin T.blockComposition.length) (j : Fin m) (hj : j ∈ T.blockCarFiber i) :
+    T.blockLeader i ≤ j := Finset.min'_le _ _ hj
+
+theorem RankTemplate.blockLeader_injective {t m k : ℕ} (T : RankTemplate t m k) :
+    Function.Injective T.blockLeader := by
+  intro i j hij
+  have hi := (T.mem_blockCarFiber i _).mp (T.blockLeader_mem i)
+  have hj := (T.mem_blockCarFiber j _).mp (T.blockLeader_mem j)
+  rw [hij] at hi
+  exact hi.symm.trans hj
+
+/-- Exact whole-block fiber transport: new position `j` contains precisely the
+old cars from block `σ j`, with the length cast made explicit. -/
+theorem RankTemplate.reorderBlocks_blockCarFiber {t m k : ℕ} (T : RankTemplate t m k)
+    (σ : Equiv.Perm (Fin T.blockComposition.length))
+    (j : Fin (T.reorderBlocks σ).blockComposition.length) :
+    (T.reorderBlocks σ).blockCarFiber j =
+      T.blockCarFiber (σ (T.reorderLengthEquiv σ j)) := by
+  classical
+  let U := T.reorderBlocks σ
+  let e := T.reorderLengthEquiv σ
+  ext car
+  rw [RankTemplate.mem_blockCarFiber, RankTemplate.mem_blockCarFiber]
+  have hindex : e (U.blockComposition.index (U.2.1.2 car)) =
+      σ.symm (T.blockComposition.index (T.2.1.2 car)) := by
+    apply Fin.ext
+    exact T.reorderBlocks_index σ (T.2.1.2 car)
+  constructor
+  · intro h
+    have hi : σ.symm (T.blockComposition.index (T.2.1.2 car)) = e j :=
+      hindex.symm.trans (congrArg e h)
+    exact (σ.apply_symm_apply _).symm.trans (congrArg σ hi)
+  · intro h
+    apply e.injective
+    calc
+      e (U.blockComposition.index (U.2.1.2 car)) =
+          σ.symm (T.blockComposition.index (T.2.1.2 car)) := hindex
+      _ = e j := by rw [h, σ.symm_apply_apply]
+
+/-- Leaders transport by the same block permutation, even for equal-sized blocks. -/
+theorem RankTemplate.reorderBlocks_blockLeader {t m k : ℕ} (T : RankTemplate t m k)
+    (σ : Equiv.Perm (Fin T.blockComposition.length))
+    (j : Fin (T.reorderBlocks σ).blockComposition.length) :
+    (T.reorderBlocks σ).blockLeader j = T.blockLeader (σ (T.reorderLengthEquiv σ j)) := by
+  let i := σ (T.reorderLengthEquiv σ j)
+  have hf : (T.reorderBlocks σ).blockCarFiber j = T.blockCarFiber i :=
+    T.reorderBlocks_blockCarFiber σ j
+  apply le_antisymm
+  · apply (T.reorderBlocks σ).blockLeader_le j
+    rw [hf]
+    exact T.blockLeader_mem i
+  · apply T.blockLeader_le i
+    rw [← hf]
+    exact (T.reorderBlocks σ).blockLeader_mem j
+
+end MeteredParking
+
+#print axioms MeteredParking.reorderedComposition_refl
+#print axioms MeteredParking.repackRanks_refl
+#print axioms MeteredParking.RankTemplate.reorderBlocks_refl
+#print axioms MeteredParking.RankTemplate.reorderBlocks_length
+#print axioms MeteredParking.RankTemplate.reorderLengthEquiv_val
+#print axioms MeteredParking.RankTemplate.reorderBlocks_blocksFun
+#print axioms MeteredParking.RankTemplate.reorderBlocks_inverse_blockComposition
+#print axioms MeteredParking.RankTemplate.repackRanks_inverse
+#print axioms MeteredParking.RankTemplate.reorderBlocks_inverse
+#print axioms MeteredParking.RankTemplate.mem_blockCarFiber
+#print axioms MeteredParking.RankTemplate.blockCarFiber_nonempty
+#print axioms MeteredParking.RankTemplate.blockLeader_mem
+#print axioms MeteredParking.RankTemplate.blockLeader_le
+#print axioms MeteredParking.RankTemplate.blockLeader_injective
+#print axioms MeteredParking.RankTemplate.reorderBlocks_blockCarFiber
+#print axioms MeteredParking.RankTemplate.reorderBlocks_blockLeader
