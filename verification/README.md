@@ -2,13 +2,13 @@
 
 Requires Python3.10 or later with its standard library only. No original repository, Git, Lean, internet access or external Python package is required.
 
-From the extracted review-package root:
+From the repository root:
 
 ```bash
 python3 verification/run_checks.py
 ```
 
-The runner locates files relative to itself, so invocation from another current directory also works. Generated results, mutation logs and bytecode go under `verification/generated/`; the shipped `expected/` files are not overwritten.
+The runner locates files relative to itself, so invocation from another current directory also works. Generated results, mutation logs and bytecode go under `verification/generated/`; the shipped `expected/` files are not overwritten. A custom `--output-dir` resolving to `expected/` or a directory beneath it, including through a symlink, is rejected before any output is written.
 
 ## Contents
 

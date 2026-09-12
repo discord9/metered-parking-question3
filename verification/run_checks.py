@@ -191,6 +191,9 @@ def main(argv=None):
     generated = Path(args.output_dir)
     if not generated.is_absolute():
         generated = BASE / generated
+    generated = generated.resolve()
+    if generated.is_relative_to(EXPECTED.resolve()):
+        parser.error("--output-dir must not be inside the expected directory")
     generated.mkdir(parents=True, exist_ok=True)
     sys.pycache_prefix = str(generated / "pycache")
 

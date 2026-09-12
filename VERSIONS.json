@@ -74,7 +74,7 @@
     "literature/question3_literature_audit_2026-09-12.md": "e19280b61a5d014067955d100879400d9d942cc06b026dae43dba0363369788d",
     "verification/definition_check.py": "362e6b3d0e7b7a836d6450a55cd44b388de0025695edb0d8d82d2f84120daefe",
     "verification/template_check.py": "40584059260ae0795c90bb3bd359ba4f35f971ba3ea6ac249824f7e4604d934b",
-    "verification/run_checks.py": "fbdb9c458edb8982875b7e6e28912e8421f77767f133963a60ef7c89d3eb0ac5",
+    "verification/run_checks.py": "2515b715d2ed7f4303007818fcfcd8df80949e2249986e3c4f702e3492add40a",
     "verification/expected/definition_result.json": "8d41d25efacc01d888615a12a30b2e39bc36121495003f78d3f0b8a90b657f97",
     "verification/expected/template_result.json": "3b89431f9c9812822192c5fdc3391b63ba2d4d2c132c3988a0b9935ae4641712"
   },
