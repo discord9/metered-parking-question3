@@ -20,6 +20,8 @@ Q_{t,m,k}(n)=a(t,m,k,n)\quad\text{for every }n\ge m-1.
 
 There is no upper bound on `t`. The case `n=m−1`, including `m=2,n=1`, is included. The count is of **preference lists**, not distinct outcomes or history pairs. No recurrence, template bijection, embedding formula, or degree bound is assumed by the final theorem.
 
+**Integer-coefficient strengthening.** Appendix A.4 also proves that this same polynomial belongs to `ℤ[X]`, not merely that it takes integer values. This is an ordinary consequence of the inclusion–exclusion formula; **the integer-coefficient corollary is not separately formalized in Lean**. The formalized original statement above is unchanged. The manuscript also isolates the component-width lemma and gives two explicit `m=4, k=2` examples.
+
 ## Read the proofs
 
 - [Paper PDF](paper/main.pdf), [Markdown](paper/main.md), [TeX source](paper/main.tex): the primary rank-template/gap proof, plus a complete independent collision inclusion–exclusion proof in Appendix A.

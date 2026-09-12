@@ -35,4 +35,4 @@ The runner requires these exact failures; an unrelated exception or a mutation t
 
 ## Limits
 
-These finite runs support the stated algorithms and examples, not the theorem for every parameter. The complete ordinary arguments are in `../paper/`; the primary all-parameter theorem is also formalized as `MeteredParking.question3` in `../AiMathLab.lean`. See `LEAN.md` for the pinned environment, commands and verification record. Collision inclusion–exclusion and optional leading-coefficient compatibility are not separately executed or formalized here.
+These finite runs support the stated algorithms and examples, not the theorem for every parameter. The complete ordinary arguments are in `../paper/`; the primary all-parameter theorem is also formalized as `MeteredParking.question3` in `../AiMathLab.lean`. See `LEAN.md` for the pinned environment, commands and verification record. Collision inclusion–exclusion and optional leading-coefficient compatibility are not separately executed or formalized here. The integer-coefficient corollary in Appendix A.4 follows from the ordinary inclusion–exclusion proof, not these finite checks, and is not separately formalized.

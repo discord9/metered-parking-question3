@@ -26,7 +26,7 @@ Outcomes are proved unique for each preference list. The count filters the finit
 4. Prove the dimension `c=r−|E|` is at most `k` by a finite cover of the ranks, and construct an actual dimension-`k` template for every allowed `t,m,k`.
 5. Sum rationally shifted descending Pochhammer polynomials, divided by factorials. At the only undersized case `n=r−1`, use the rational root `c−1`, **not** a truncated natural `n−r+c`. An actual top-dimensional template makes coefficient `k` positive; lower coefficients are not assumed nonnegative.
 
-The manuscript's primary proof uses the equivalent least-car-in-each-component argument for the dimension bound. The formal proof avoids a separate graph representation. Appendix A's independent inclusion–exclusion proof has not been separately formalized.
+The manuscript's primary proof uses the equivalent least-car-in-each-component argument for the dimension bound. The formal proof avoids a separate graph representation. Appendix A's independent inclusion–exclusion proof has not been separately formalized. Its integer-coefficient corollary in A.4 is likewise an ordinary result, not a separate Lean theorem: `MeteredParking.question3` continues to quantify over `Polynomial ℚ`. The manuscript additions do not change the Lean source or the pinned configuration checked below.
 
 ## Pinned reproduction
 

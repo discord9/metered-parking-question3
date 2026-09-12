@@ -68,9 +68,9 @@
     "lean-toolchain": "efac0b94923b2d8b6840cd35be9177ad0fc5ab2332f4f4311c98712cee92fdee",
     "lakefile.toml": "521fdfc79cb553b5da45ac761cd6a649fc67a5587c675d14fd394790523cb52d",
     "lake-manifest.json": "68c1875da98acc9b44200ff4a02d2daf0619975980437c5effd7337da08aab3e",
-    "paper/main.tex": "1c54c0ee199ca6557b29ee9ec5761f026a12437d77f1cd25303ec9541dcbee4f",
-    "paper/main.md": "42ebe38745be40ab6800e28c8bd090998396c6e46789cf2d098bcdd0827e0f3f",
-    "paper/main.pdf": "3fb234cf8e5a540043a4a39f3abf0ab744014ea9dd1142eb0eab4041f1f6edc4",
+    "paper/main.tex": "26ac74b153b1bb29179cc5f3c3bde86d69722c65b4470681c99359d6a0db4cdc",
+    "paper/main.md": "d3b7a7ba2d6d9d202b350fbcdc3fe7dc84edd63c68c4b4c892e008f5225bdf11",
+    "paper/main.pdf": "69c4f59ecd7bcde2478e79978b9d9a9d9677cb92260add1c6ad6c67fe75360c6",
     "literature/question3_literature_audit_2026-09-12.md": "e19280b61a5d014067955d100879400d9d942cc06b026dae43dba0363369788d",
     "verification/definition_check.py": "362e6b3d0e7b7a836d6450a55cd44b388de0025695edb0d8d82d2f84120daefe",
     "verification/template_check.py": "40584059260ae0795c90bb3bd359ba4f35f971ba3ea6ac249824f7e4604d934b",
@@ -80,6 +80,7 @@
   },
   "observed_verification": "verification/observed/results.json",
   "typesetter": "Tectonic 0.15.0",
-  "paper_pages": 7,
-  "license_status": "No general reuse license selected; dependencies retain their upstream licenses."
+  "paper_pages": 8,
+  "license_status": "No general reuse license selected; dependencies retain their upstream licenses.",
+  "formalization_scope": "Original rational-polynomial Theorem 1; the integer-coefficient corollary is not separately formalized."
 }

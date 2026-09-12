@@ -2,9 +2,9 @@
 
 2026-09-12
 
-**Research manuscript; formal verification complete.**
+**Research manuscript; primary Theorem 1 formally verified.**
 
-Formal verification in Lean 4.31.0: complete.
+Lean 4.31.0 formal verification of primary Theorem 1: complete.
 
 ## Abstract
 
@@ -165,6 +165,17 @@ There is no leading-term cancellation, and the degree is exactly \(k\). ∎
 
 **Reused outcomes and unforced unit gaps.** For \(t=1,m=3,n=2\), the list \((1,1,1)\) has outcomes \((1,2,1)\) and lucky set \(\{1,3\}\). Its template has \(u=(1,1,1)\), \(v=(1,2,1)\), \(r=2\), and \(c=1\). The list \((1,1,2)\) fails at the third car. For \(t=1,m=3,n=3\), the list \((1,1,3)\) has outcomes \((1,2,3)\), \(u=(1,1,3)\), and \(v=(1,2,3)\). Here \(E(T)=\{1\}\) and \(c=2\), although all three physical spaces are consecutive. The unit gap between ranks \(2\) and \(3\) is unforced.
 
+**Intermediate lucky-car counts.** For \(n\ge3\), grouping the rank templates in (7) by their \((r,c)\) values gives
+
+\[
+\begin{aligned}
+a_{1,4,2}(n)&=(n-1)+5(n-2)+6\binom{n-2}{2}=3n^2-9n+7,\\
+a_{2,4,2}(n)&=7(n-2)+5(n-3)+16\binom{n-2}{2}=8n^2-28n+19.
+\end{aligned}
+\]
+
+Indeed, the respective nonzero grouped template multiplicities are \((2,1):1\), \((3,1):5\), \((4,2):6\) and \((3,1):7\), \((4,1):5\), \((4,2):16\). These identities are direct evaluations of the exact template formula (7), rather than polynomials fitted from finitely many values.
+
 **Long meters and one lucky car.** If \(t\ge m-1\), no car leaves before the last car parks. All successful outcomes are distinct, so \(r=m\); at \(n=m-1\) every template contributes \(\binom{c-1}{c}=0\), as the capacity constraint requires. For \(k=1\), the count is
 
 \[
@@ -179,7 +190,7 @@ The template check covers \(m=2,\ldots,4\), \(t=1,\ldots,m\), and \(n=m-1,m,m+1\
 
 From the paper directory, run `python3 ../verification/run_checks.py` to reproduce the bounded finite checks against the reference JSON in `../verification/expected/`. Instructions are in `../verification/README.md`; formalization commands and verification records are in `../verification/LEAN.md`. Finite checks do not prove the all-parameter statement.
 
-**Formal verification in Lean 4.31.0: complete.** The primary all-parameter Question 3 statement is formalized as `MeteredParking.question3` in `../AiMathLab.lean`, with degree exactly \(k\) for all \(n\ge m-1\). The formal proof uses the rank-template argument with the finite cover for \(c\le k\); the independent inclusion–exclusion appendix is not separately formalized. The ordinary proof, finite checks, formal verification, and external mathematical review are distinct activities.
+**Lean 4.31.0 verification of primary Theorem 1: complete.** The primary all-parameter Question 3 statement is formalized as `MeteredParking.question3` in `../AiMathLab.lean`, with degree exactly \(k\) for all \(n\ge m-1\). The formal proof uses the rank-template argument with the finite cover for \(c\le k\). The independent inclusion–exclusion appendix, including its integer-coefficient corollary below, is not separately formalized. The ordinary proof, finite checks, formal verification, and external mathematical review are distinct activities.
 
 ## Appendix A. An independent collision inclusion–exclusion proof
 
@@ -241,20 +252,26 @@ Here and below \(C\) runs over the components of the equation graph for \((D,F)\
 
 There are at most \(k\) components. Indeed, if the least-labelled vertex \(j\) of a component were unlucky, its equation with \(s=1\) would connect it to \(f_j(1)<j\), a contradiction. Each component therefore contains a different lucky vertex.
 
-We also have the sharp width bound
+**Lemma 3 (Continuous heights and component width).** For a consistent \((D,F)\) system and each component \(C\) of its equation graph, the normalized offset heights form the full integer interval
+
+\[
+\{b_v:v\in C\}=\{0,1,\ldots,w_C\},
+\]
+
+and
 
 \[
 w_C\le |C|-1\le m-1.
 \tag{12}
 \]
 
-To prove it, consider, for each unlucky \(j\), the block of labels
+*Proof.* Consider, for each unlucky \(j\), the full displacement block of labels
 
 \[
 B_j=\{j,f_j(1),\ldots,f_j(d_j)\}.
 \]
 
-Its offset values are the whole integer interval \(\{b_j-d_j,\ldots,b_j\}\). Each added collision edge has a singleton offset set. These blocks and edges connect the equation component. If an integer height strictly between its minimum and maximum were missing, every interval block would lie entirely on one side of that height, and no block or equality edge could connect the two sides. This contradicts connectedness. Isolated vertices have width zero directly. Thus all \(w_C+1\) offset heights occur among the \(|C|\) labels, proving (12).
+Its offset values are the whole integer interval \(\{b_j-d_j,\ldots,b_j\}\). Each added zero-offset collision edge has a singleton offset set. These full blocks and edges connect the equation component. If an integer height strictly between its minimum and maximum were missing, every interval block would lie entirely on one side of that height, and no block or equality edge could connect the two sides. This contradicts connectedness. Isolated vertices have width zero directly. Thus all \(w_C+1\) offset heights occur among the \(|C|\) labels, proving both the interval assertion and (12). ∎
 
 For \(n\ge m-1\), (12) gives \((n-w_C)_+=n-w_C\), including the zero case \(n=w_C=m-1\). Consequently the finite polynomial
 
@@ -293,6 +310,19 @@ a_{t,m,k}(n)\ge\binom{n-\ell+1}{k}
 \]
 
 The lower bound grows with leading term \(n^k/k!\). Since (13) already supplies a polynomial of degree at most \(k\) agreeing with the count, its degree must be exactly \(k\) and its leading coefficient positive. This completes the independent proof of Theorem 1.
+
+### A.4. Integer coefficients
+
+**Corollary (Integer coefficients).** For the original parameters \(t\ge1\), \(m\ge2\), and \(1\le k\le m-1\), the polynomial \(Q_{t,m,k}(X)\) of Theorem 1 belongs to \(\mathbb Z[X]\). Equivalently, \(R_{t,m,k}(X)\) has integer coefficients; it has degree exactly \(k\) and satisfies
+
+\[
+a_{t,m,k}(n)=R_{t,m,k}(n)
+\qquad(n\ge m-1).
+\]
+
+*Proof.* The choices of \(D\) and \(F\) are finite and independent of \(n\). For each consistent system, the difference equations give the integer width \(w_C\). Thus (13) is a finite signed sum of products \((X-w_C)\), with no division, so \(R_{t,m,k}(X)\in\mathbb Z[X]\). Via the embedding \(\mathbb Z\hookrightarrow\mathbb Q\), this polynomial and the primary \(Q_{t,m,k}\) agree at every integer \(n\ge m-1\). Their difference has infinitely many roots, hence \(Q_{t,m,k}=R_{t,m,k}\). The preceding subsection gives the count identity and exact degree. ∎
+
+This ordinary appendix strengthening is not separately formalized in Lean.
 
 ## Literature scope and disclosure
 
