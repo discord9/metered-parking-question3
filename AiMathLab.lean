@@ -2600,3 +2600,136 @@ end MeteredParking
 #print axioms MeteredParking.rankTemplateEquivCanonical_right_inv
 #print axioms MeteredParking.rankTemplateEquivCanonical_symm_rank
 #print axioms MeteredParking.rankTemplateEquivCanonical_symm_gapDimension
+
+/-!
+## The ordinary integer-coefficient counting polynomial
+
+Each canonical template contributes one falling-factorial numerator over the
+integers. Its reconstruction permutations supply exactly the factorial that
+cancels the denominator in the existing rational template polynomial. Thus the
+integer polynomial maps to the same `question3Polynomial`, and its degree and
+all required evaluations follow from the previously proved rational results.
+-/
+
+namespace MeteredParking
+
+open scoped BigOperators
+
+/-- The integral numerator of one template's binomial polynomial. -/
+noncomputable def RankTemplate.countNumerator {t m k : ℕ} (T : RankTemplate t m k) :
+    Polynomial ℤ :=
+  (descPochhammer ℤ T.gapDimension).comp
+    (Polynomial.X + Polynomial.C (-((T.1 : ℕ) : ℤ) + (T.gapDimension : ℤ)))
+
+/-- The permutation multiplicity cancels the rational factorial denominator. -/
+theorem RankTemplate.countNumerator_map {t m k : ℕ} (T : RankTemplate t m k) :
+    T.countNumerator.map (Int.castRingHom ℚ) = T.gapDimension.factorial • T.countPolynomial := by
+  have hf : (T.gapDimension.factorial : ℚ) ≠ 0 := by
+    exact_mod_cast Nat.factorial_ne_zero T.gapDimension
+  rw [RankTemplate.countNumerator, Polynomial.map_comp, descPochhammer_map]
+  simp only [Polynomial.map_add, Polynomial.map_X, Polynomial.map_C,
+    Int.coe_castRingHom, Int.cast_add, Int.cast_neg, Int.cast_natCast]
+  rw [← Polynomial.natCast_mul, ← Polynomial.C_eq_natCast, RankTemplate.countPolynomial,
+    ← mul_assoc, ← Polynomial.C_mul, mul_inv_cancel₀ hf, Polynomial.C_1, one_mul]
+
+private theorem countPolynomial_canonical_symm {t m k : ℕ}
+    (z : Σ S : {T : RankTemplate t m k // Canonical T}, Equiv.Perm (Fin S.1.gapDimension)) :
+    ((rankTemplateEquivCanonical t m k).symm z).countPolynomial = z.1.1.countPolynomial := by
+  exact congrArg₂
+    (fun (r c : ℕ) => Polynomial.C ((c.factorial : ℚ)⁻¹) *
+      (descPochhammer ℚ c).comp (Polynomial.X + Polynomial.C (-(r : ℚ) + (c : ℚ))))
+    (congrArg Fin.val (rankTemplateEquivCanonical_symm_rank z))
+    (rankTemplateEquivCanonical_symm_gapDimension z)
+
+/-- A finite sum of integer-coefficient numerators, one per canonical template. -/
+noncomputable def question3IntegerPolynomial (t m k : ℕ) : Polynomial ℤ := by
+  classical
+  exact ∑ S : {T : RankTemplate t m k // Canonical T}, S.1.countNumerator
+
+/-- Ordinary integer-coefficient membership of the existing rational polynomial,
+proved by the exact canonical-template correspondence rather than integer-valuedness. -/
+theorem question3IntegerPolynomial_map (t m k : ℕ) :
+    (question3IntegerPolynomial t m k).map (Int.castRingHom ℚ) =
+      question3Polynomial t m k := by
+  classical
+  rw [question3IntegerPolynomial, Polynomial.map_sum]
+  symm
+  calc
+    question3Polynomial t m k =
+        ∑ z : Σ S : {T : RankTemplate t m k // Canonical T},
+            Equiv.Perm (Fin S.1.gapDimension),
+          ((rankTemplateEquivCanonical t m k).symm z).countPolynomial :=
+      (Equiv.sum_comp (rankTemplateEquivCanonical t m k).symm
+        (fun T : RankTemplate t m k => T.countPolynomial)).symm
+    _ = ∑ z : Σ S : {T : RankTemplate t m k // Canonical T},
+          Equiv.Perm (Fin S.1.gapDimension), z.1.1.countPolynomial := by
+      apply Finset.sum_congr rfl
+      intro z _
+      exact countPolynomial_canonical_symm z
+    _ = ∑ S : {T : RankTemplate t m k // Canonical T},
+          ∑ _ : Equiv.Perm (Fin S.1.gapDimension), S.1.countPolynomial :=
+      Fintype.sum_sigma _
+    _ = ∑ S : {T : RankTemplate t m k // Canonical T},
+          S.1.gapDimension.factorial • S.1.countPolynomial := by
+      apply Finset.sum_congr rfl
+      intro S _
+      simp only [Finset.sum_const, Finset.card_univ, Fintype.card_perm, Fintype.card_fin]
+    _ = ∑ S : {T : RankTemplate t m k // Canonical T},
+          S.1.countNumerator.map (Int.castRingHom ℚ) := by
+      apply Finset.sum_congr rfl
+      intro S _
+      exact S.1.countNumerator_map.symm
+
+theorem question3IntegerPolynomial_natDegree (t m k : ℕ)
+    (ht : 1 ≤ t) (hm : 2 ≤ m) (hk : 1 ≤ k) (hkm : k ≤ m - 1) :
+    (question3IntegerPolynomial t m k).natDegree = k := by
+  have hi : Function.Injective (Int.castRingHom ℚ) := Int.cast_injective
+  calc
+    (question3IntegerPolynomial t m k).natDegree =
+        ((question3IntegerPolynomial t m k).map (Int.castRingHom ℚ)).natDegree :=
+      (Polynomial.natDegree_map_eq_of_injective hi _).symm
+    _ = (question3Polynomial t m k).natDegree :=
+      congrArg Polynomial.natDegree (question3IntegerPolynomial_map t m k)
+    _ = k := question3Polynomial_natDegree t m k ht hm hk hkm
+
+/-- Evaluation transfers at every original capacity, including `n = m - 1`. -/
+theorem question3IntegerPolynomial_eval (t m k n : ℕ) (hm : 0 < m) (hn : m - 1 ≤ n) :
+    (question3IntegerPolynomial t m k).eval (n : ℤ) =
+      (countSuccessfulPreferences t m k n : ℤ) := by
+  apply (Int.cast_injective : Function.Injective (Int.cast : ℤ → ℚ))
+  calc
+    (((question3IntegerPolynomial t m k).eval (n : ℤ) : ℤ) : ℚ) =
+        ((question3IntegerPolynomial t m k).map (Int.castRingHom ℚ)).eval (n : ℚ) :=
+      (Polynomial.eval_natCast_map (Int.castRingHom ℚ) (question3IntegerPolynomial t m k) n).symm
+    _ = ((countSuccessfulPreferences t m k n : ℤ) : ℚ) := by
+      rw [question3IntegerPolynomial_map]
+      simpa only [Int.cast_natCast] using question3Polynomial_eval t m k n hm hn
+
+/-- The original counting polynomial has ordinary integer coefficients, exact
+degree `k`, and the original all-capacity evaluation range. No extra premises. -/
+theorem question3_integral (t m k : ℕ) (ht : 1 ≤ t) (hm : 2 ≤ m)
+    (hk : 1 ≤ k) (hkm : k ≤ m - 1) :
+    ∃ P : Polynomial ℤ,
+      P.map (Int.castRingHom ℚ) = question3Polynomial t m k ∧
+      P.natDegree = k ∧
+      ∀ n : ℕ, m - 1 ≤ n → P.eval (n : ℤ) = (countSuccessfulPreferences t m k n : ℤ) := by
+  refine ⟨question3IntegerPolynomial t m k, question3IntegerPolynomial_map t m k,
+    question3IntegerPolynomial_natDegree t m k ht hm hk hkm, ?_⟩
+  intro n hn
+  exact question3IntegerPolynomial_eval t m k n (by omega) hn
+
+end MeteredParking
+
+#print axioms MeteredParking.RankTemplate.countNumerator_map
+#print axioms MeteredParking.question3IntegerPolynomial_map
+#print axioms MeteredParking.question3IntegerPolynomial_natDegree
+#print axioms MeteredParking.question3IntegerPolynomial_eval
+#print axioms MeteredParking.question3_integral
+
+#check (MeteredParking.question3_integral :
+  ∀ (t m k : ℕ), 1 ≤ t → 2 ≤ m → 1 ≤ k → k ≤ m - 1 →
+    ∃ P : Polynomial ℤ,
+      P.map (Int.castRingHom ℚ) = MeteredParking.question3Polynomial t m k ∧
+      P.natDegree = k ∧
+      ∀ n : ℕ, m - 1 ≤ n →
+        P.eval (n : ℤ) = (MeteredParking.countSuccessfulPreferences t m k n : ℤ))
