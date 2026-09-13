@@ -10,7 +10,19 @@ The complete primary theorem is formalized as **`MeteredParking.question3`** in 
         (MeteredParking.countSuccessfulPreferences t m k n : ℚ)
 ```
 
-The type is explicitly checked at the end of the source. The final polynomial has a positive coefficient at degree `k`; since `k≥1`, `natDegree=k` expresses the usual exact degree rather than the zero polynomial convention.
+The integer-coefficient strengthening is formalized as **`MeteredParking.question3_integral`**:
+
+```lean
+∀ (t m k : ℕ), 1 ≤ t → 2 ≤ m → 1 ≤ k → k ≤ m - 1 →
+  ∃ P : Polynomial ℤ,
+    P.map (Int.castRingHom ℚ) = MeteredParking.question3Polynomial t m k ∧
+    P.natDegree = k ∧
+    ∀ n : ℕ, m - 1 ≤ n →
+      P.eval (n : ℤ) =
+        (MeteredParking.countSuccessfulPreferences t m k n : ℤ)
+```
+
+Both types are explicitly checked in the source. The second theorem identifies the same rational polynomial as the image of an actual integer-coefficient polynomial, not merely an integer-valued one. The original polynomial has a positive coefficient at degree `k`; since `k≥1`, `natDegree=k` expresses the usual exact degree rather than the zero polynomial convention.
 
 ## Definition correspondence
 
@@ -26,7 +38,10 @@ Outcomes are proved unique for each preference list. The count filters the finit
 4. Prove the dimension `c=r−|E|` is at most `k` by a finite cover of the ranks, and construct an actual dimension-`k` template for every allowed `t,m,k`.
 5. Sum rationally shifted descending Pochhammer polynomials, divided by factorials. At the only undersized case `n=r−1`, use the rational root `c−1`, **not** a truncated natural `n−r+c`. An actual top-dimensional template makes coefficient `k` positive; lower coefficients are not assumed nonnegative.
 
-The manuscript's primary proof uses the equivalent least-car-in-each-component argument for the dimension bound. The formal proof avoids a separate graph representation. Appendix A's independent inclusion–exclusion proof has not been separately formalized. Its integer-coefficient corollary in A.4 is likewise an ordinary result, not a separate Lean theorem: `MeteredParking.question3` continues to quantify over `Polynomial ℚ`. The manuscript additions do not change the Lean source or the pinned configuration checked below.
+6. Reorder the forced-edge components, retaining every labelled preference and outcome and proving exact inverse reconstruction. Sort components by their least original car labels to obtain an equivalence between templates and canonical templates paired with permutations of `Fin c`. Both inverse laws recover the complete dependent pair, including the permutation even when component sizes coincide.
+7. Sum integer descending-Pochhammer numerators over canonical templates. Each reconstruction fiber has exactly `c!` elements, cancelling the old rational denominator. Map this integer sum to the original polynomial, then transfer exact degree and all `n≥m−1` evaluations through the injective coefficient map.
+
+The manuscript's primary proof uses the equivalent least-car-in-each-component argument for the dimension bound; the original formal dimension proof uses a finite cover. The integer-coefficient corollary in A.4 is now formalized through canonical forced-component reordering, **not through its independent inclusion–exclusion proof**. Appendix A's independent proof remains unformalized. The original rational proof and pinned configuration are unchanged.
 
 ## Pinned reproduction
 
@@ -36,6 +51,7 @@ From the repository root, after installing elan:
 lake exe cache get
 lake build
 lake env lean -DwarningAsError=true AiMathLab.lean
+lake env lean -DwarningAsError=true --stdin < verification/consumer-check.txt
 LEAN_NUM_THREADS=1 lake env leanchecker -v AiMathLab
 ```
 
@@ -51,22 +67,23 @@ All these commands actually exited zero:
 |---|---|
 | `lake build` | [`observed/lean-build.txt`](observed/lean-build.txt) |
 | `lake env lean -DwarningAsError=true AiMathLab.lean` | [`observed/lean-strict.txt`](observed/lean-strict.txt) |
+| `lake env lean -DwarningAsError=true --stdin < verification/consumer-check.txt` | [`observed/lean-consumer.txt`](observed/lean-consumer.txt) |
 | `LEAN_NUM_THREADS=1 lake env leanchecker -v AiMathLab` | [`observed/lean-replay.txt`](observed/lean-replay.txt) |
 | `python3 verification/run_checks.py` | [`observed/finite-checks.txt`](observed/finite-checks.txt) |
 
-The standalone project build and strict check emitted no warnings. The Python run was separately isolated without Lean, Git, the private repository or network access; it matched both reference JSON files byte-for-byte and passed both exact mutation checks. The shipped expected files were unchanged.
+The standalone project build, strict check and consumer import emitted no warnings. The consumer imports the built module and checks the full integer-polynomial theorem type; its input is the exact typed check and five final axiom commands copied from the source. All command stderr streams were empty. The Python run was separately isolated without Lean, Git, the private repository or network access; it matched both reference JSON files byte-for-byte and passed both exact mutation checks. The shipped expected files were unchanged.
 
 [`observed/results.json`](observed/results.json) records the execution statuses, source and olean hashes, and isolation limitations. The compiled olean hash did not change during replay. A matching local olean hash is not required for verification on a different platform or build path; rerunning the checked commands is the substantive test.
 
 ## Trust and review limits
 
-The final theorem's printed dependencies are:
+Both final theorems' printed dependencies are:
 
 ```text
 [propext, Classical.choice, Quot.sound]
 ```
 
-All **76** printed `MeteredParking` dependency lists were inspected and are standard-only or empty. There is no custom axiom, `sorry`, `admit`, `native_decide`, unsafe/IO implementation, or executable elaborator/macro in the proof source. The closed `by decide` arithmetic proof is ordinary kernel-checked decision.
+All **135** printed `MeteredParking` dependency lists were inspected: **133** are standard-only and **2** empty. The five additional consumer-import reports are standard-only as well. There is no custom axiom, `sorry`, `admit`, `native_decide`, unsafe/IO implementation, or executable elaborator/macro in the proof source. The closed `by decide` arithmetic proof is ordinary kernel-checked decision.
 
 `leanchecker` replays this module's declarations with the **same Lean kernel**. Its success is an additional artifact/replay check, not independent-kernel certification. Internal AI source reviews checked statement correspondence and proof structure, but are not supplied as mathematical authority or as external human peer review. The ordinary arguments and Lean source must be judged directly.
 
@@ -74,6 +91,6 @@ The all-parameter theorem is not inferred from finite computation. Formal verifi
 
 ## Source continuity
 
-The accepted topic-specific Lean declarations, proof terms, comments and inspection commands were preserved byte-for-byte when preparing this repository. Only the old unrelated import/diagnostic prefix was replaced with `import Mathlib`. The public source is 1,547 lines and contains only `MeteredParking` material. The standalone build, strict check and replay above apply to this extracted source, not merely to its earlier research version.
+The original public proof's **1,547 lines / 68,678 bytes** are preserved as an exact prefix (SHA256 `a1e2e66d8e41709f9d52bfda05f49b28b4a0b3918b826850020af0111833eb4d`). The integer strengthening appends **1,188 lines**, for **2,735 lines** total. No toolchain, dependency lock, configuration, count definition or original rational proof was changed. The fresh standalone build, strict check, consumer import and replay above apply to this complete current source.
 
 No private Git history, other conjectures, dependency caches or internal review transcripts are included. The root module retains its original `AiMathLab` name to avoid unnecessary source churn; it imports only public mathlib.

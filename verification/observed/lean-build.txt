@@ -1,4 +1,4 @@
-ℹ [8558/8559] Built AiMathLab (5.6s)
+ℹ [8558/8559] Built AiMathLab (6.9s)
 info: AiMathLab.lean:149:0: MeteredParking.IsParking.unique {m n t : ℕ} {a p q : Fin m → Fin n} (hp : MeteredParking.IsParking t a p)
   (hq : MeteredParking.IsParking t a q) : p = q
 info: AiMathLab.lean:150:0: MeteredParking.countSuccessfulPreferences (t m k n : ℕ) : ℕ
@@ -103,4 +103,76 @@ info: AiMathLab.lean:1544:0: 'MeteredParking.question3Polynomial_natDegree_le' d
 info: AiMathLab.lean:1545:0: 'MeteredParking.question3Polynomial_coeff_pos' depends on axioms: [propext, Classical.choice, Quot.sound]
 info: AiMathLab.lean:1546:0: 'MeteredParking.question3Polynomial_natDegree' depends on axioms: [propext, Classical.choice, Quot.sound]
 info: AiMathLab.lean:1547:0: 'MeteredParking.question3' depends on axioms: [propext, Classical.choice, Quot.sound]
+info: AiMathLab.lean:1702:0: 'MeteredParking.relabel_interval_coverage' depends on axioms: [propext, Classical.choice, Quot.sound]
+info: AiMathLab.lean:1703:0: 'MeteredParking.IsParking.relabel_of_forced_adj' depends on axioms: [propext, Classical.choice, Quot.sound]
+info: AiMathLab.lean:1704:0: 'MeteredParking.forcedEdges_relabel_of_forced_adj' depends on axioms: [propext, Classical.choice, Quot.sound]
+info: AiMathLab.lean:1705:0: 'MeteredParking.IsRankTemplate.relabel_of_forced_adj' depends on axioms: [propext, Classical.choice, Quot.sound]
+info: AiMathLab.lean:2008:0: 'MeteredParking.RankTemplate.blockComposition_boundaries' depends on axioms: [propext, Classical.choice, Quot.sound]
+info: AiMathLab.lean:2009:0: 'MeteredParking.RankTemplate.blockComposition_length' depends on axioms: [propext, Classical.choice, Quot.sound]
+info: AiMathLab.lean:2010:0: 'MeteredParking.RankTemplate.mem_forcedEdges_iff_not_blockBoundary' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound]
+info: AiMathLab.lean:2011:0: 'MeteredParking.composition_adj_same_block_iff' depends on axioms: [propext, Classical.choice, Quot.sound]
+info: AiMathLab.lean:2012:0: 'MeteredParking.reorderedComposition_length' depends on axioms: [propext, Classical.choice, Quot.sound]
+info: AiMathLab.lean:2013:0: 'MeteredParking.reorderedComposition_blocksFun' depends on axioms: [propext, Classical.choice, Quot.sound]
+info: AiMathLab.lean:2014:0: 'MeteredParking.repackRanks_index' depends on axioms: [propext, Classical.choice, Quot.sound]
+info: AiMathLab.lean:2015:0: 'MeteredParking.repackRanks_local' depends on axioms: [propext, Classical.choice, Quot.sound]
+info: AiMathLab.lean:2016:0: 'MeteredParking.repackRanks_val' depends on axioms: [propext, Classical.choice, Quot.sound]
+info: AiMathLab.lean:2017:0: 'MeteredParking.repackRanks_succ_not_boundary' depends on axioms: [propext, Classical.choice, Quot.sound]
+info: AiMathLab.lean:2018:0: 'MeteredParking.repackRanks_adj' depends on axioms: [propext, Classical.choice, Quot.sound]
+info: AiMathLab.lean:2019:0: 'MeteredParking.RankTemplate.repackRanks_forced_adj' depends on axioms: [propext, Classical.choice, Quot.sound]
+info: AiMathLab.lean:2020:0: 'MeteredParking.RankTemplate.reorderBlocks_rank' depends on axioms: [propext, Classical.choice, Quot.sound]
+info: AiMathLab.lean:2021:0: 'MeteredParking.RankTemplate.reorderBlocks_forcedEdges' depends on axioms: [propext, Classical.choice, Quot.sound]
+info: AiMathLab.lean:2022:0: 'MeteredParking.RankTemplate.reorderBlocks_blockComposition' depends on axioms: [propext, Classical.choice, Quot.sound]
+info: AiMathLab.lean:2023:0: 'MeteredParking.RankTemplate.reorderBlocks_gapDimension' depends on axioms: [propext, Classical.choice, Quot.sound]
+info: AiMathLab.lean:2024:0: 'MeteredParking.RankTemplate.reorderBlocks_index' depends on axioms: [propext, Classical.choice, Quot.sound]
+info: AiMathLab.lean:2025:0: 'MeteredParking.RankTemplate.reorderBlocks_local' depends on axioms: [propext, Classical.choice, Quot.sound]
+info: AiMathLab.lean:2316:0: 'MeteredParking.reorderedComposition_refl' depends on axioms: [propext, Classical.choice, Quot.sound]
+info: AiMathLab.lean:2317:0: 'MeteredParking.repackRanks_refl' depends on axioms: [propext, Classical.choice, Quot.sound]
+info: AiMathLab.lean:2318:0: 'MeteredParking.RankTemplate.reorderBlocks_refl' depends on axioms: [propext, Classical.choice, Quot.sound]
+info: AiMathLab.lean:2319:0: 'MeteredParking.RankTemplate.reorderBlocks_length' depends on axioms: [propext, Classical.choice, Quot.sound]
+info: AiMathLab.lean:2320:0: 'MeteredParking.RankTemplate.reorderLengthEquiv_val' depends on axioms: [propext, Classical.choice, Quot.sound]
+info: AiMathLab.lean:2321:0: 'MeteredParking.RankTemplate.reorderBlocks_blocksFun' depends on axioms: [propext, Classical.choice, Quot.sound]
+info: AiMathLab.lean:2322:0: 'MeteredParking.RankTemplate.reorderBlocks_inverse_blockComposition' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound]
+info: AiMathLab.lean:2323:0: 'MeteredParking.RankTemplate.repackRanks_inverse' depends on axioms: [propext, Classical.choice, Quot.sound]
+info: AiMathLab.lean:2324:0: 'MeteredParking.RankTemplate.reorderBlocks_inverse' depends on axioms: [propext, Classical.choice, Quot.sound]
+info: AiMathLab.lean:2325:0: 'MeteredParking.RankTemplate.mem_blockCarFiber' depends on axioms: [propext, Classical.choice, Quot.sound]
+info: AiMathLab.lean:2326:0: 'MeteredParking.RankTemplate.blockCarFiber_nonempty' depends on axioms: [propext, Classical.choice, Quot.sound]
+info: AiMathLab.lean:2327:0: 'MeteredParking.RankTemplate.blockLeader_mem' depends on axioms: [propext, Classical.choice, Quot.sound]
+info: AiMathLab.lean:2328:0: 'MeteredParking.RankTemplate.blockLeader_le' depends on axioms: [propext, Classical.choice, Quot.sound]
+info: AiMathLab.lean:2329:0: 'MeteredParking.RankTemplate.blockLeader_injective' depends on axioms: [propext, Classical.choice, Quot.sound]
+info: AiMathLab.lean:2330:0: 'MeteredParking.RankTemplate.reorderBlocks_blockCarFiber' depends on axioms: [propext, Classical.choice, Quot.sound]
+info: AiMathLab.lean:2331:0: 'MeteredParking.RankTemplate.reorderBlocks_blockLeader' depends on axioms: [propext, Classical.choice, Quot.sound]
+info: AiMathLab.lean:2587:0: 'MeteredParking.RankTemplate.sortBlocks_strictMono' depends on axioms: [propext, Classical.choice, Quot.sound]
+info: AiMathLab.lean:2588:0: 'MeteredParking.RankTemplate.sortBlocks_unique' depends on axioms: [propext, Classical.choice, Quot.sound]
+info: AiMathLab.lean:2589:0: 'MeteredParking.RankTemplate.sortBlocks_eq_refl' depends on axioms: [propext, Classical.choice, Quot.sound]
+info: AiMathLab.lean:2590:0: 'MeteredParking.RankTemplate.canonicalize' depends on axioms: [propext, Classical.choice, Quot.sound]
+info: AiMathLab.lean:2591:0: 'MeteredParking.RankTemplate.sortBlocks_reorder' depends on axioms: [propext, Classical.choice, Quot.sound]
+info: AiMathLab.lean:2592:0: 'MeteredParking.RankTemplate.canonicalize_reorder' depends on axioms: [propext, Classical.choice, Quot.sound]
+info: AiMathLab.lean:2593:0: 'MeteredParking.reconstruct_canonicalPresentation' depends on axioms: [propext, Classical.choice, Quot.sound]
+info: AiMathLab.lean:2594:0: 'MeteredParking.reconstructCanonical_injective' depends on axioms: [propext, Classical.choice, Quot.sound]
+info: AiMathLab.lean:2595:0: 'MeteredParking.canonicalPresentation_reconstruct' depends on axioms: [propext, Classical.choice, Quot.sound]
+info: AiMathLab.lean:2596:0: 'MeteredParking.rankTemplateEquivCanonicalLength' depends on axioms: [propext, Classical.choice, Quot.sound]
+info: AiMathLab.lean:2597:0: 'MeteredParking.RankTemplate.gapPermutationEquiv' depends on axioms: [propext, Classical.choice, Quot.sound]
+info: AiMathLab.lean:2598:0: 'MeteredParking.rankTemplateEquivCanonical' depends on axioms: [propext, Classical.choice, Quot.sound]
+info: AiMathLab.lean:2599:0: 'MeteredParking.rankTemplateEquivCanonical_left_inv' depends on axioms: [propext, Classical.choice, Quot.sound]
+info: AiMathLab.lean:2600:0: 'MeteredParking.rankTemplateEquivCanonical_right_inv' depends on axioms: [propext, Classical.choice, Quot.sound]
+info: AiMathLab.lean:2601:0: 'MeteredParking.rankTemplateEquivCanonical_symm_rank' depends on axioms: [propext, Classical.choice, Quot.sound]
+info: AiMathLab.lean:2602:0: 'MeteredParking.rankTemplateEquivCanonical_symm_gapDimension' depends on axioms: [propext, Classical.choice, Quot.sound]
+info: AiMathLab.lean:2723:0: 'MeteredParking.RankTemplate.countNumerator_map' depends on axioms: [propext, Classical.choice, Quot.sound]
+info: AiMathLab.lean:2724:0: 'MeteredParking.question3IntegerPolynomial_map' depends on axioms: [propext, Classical.choice, Quot.sound]
+info: AiMathLab.lean:2725:0: 'MeteredParking.question3IntegerPolynomial_natDegree' depends on axioms: [propext, Classical.choice, Quot.sound]
+info: AiMathLab.lean:2726:0: 'MeteredParking.question3IntegerPolynomial_eval' depends on axioms: [propext, Classical.choice, Quot.sound]
+info: AiMathLab.lean:2727:0: 'MeteredParking.question3_integral' depends on axioms: [propext, Classical.choice, Quot.sound]
+info: AiMathLab.lean:2729:0: MeteredParking.question3_integral : ∀ (t m k : ℕ),
+  1 ≤ t →
+    2 ≤ m →
+      1 ≤ k →
+        k ≤ m - 1 →
+          ∃ P,
+            Polynomial.map (Int.castRingHom ℚ) P = MeteredParking.question3Polynomial t m k ∧
+              P.natDegree = k ∧
+                ∀ (n : ℕ), m - 1 ≤ n → Polynomial.eval (↑n) P = ↑(MeteredParking.countSuccessfulPreferences t m k n)
 Build completed successfully (8559 jobs).

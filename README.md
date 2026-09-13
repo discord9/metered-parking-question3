@@ -4,7 +4,7 @@
 
 给定任意 `t ≥ 1`、`m ≥ 2`、`1 ≤ k ≤ m−1`，成功且恰有 `k` 辆 lucky 的有序偏好串计数，对**所有 `n ≥ m−1`**等于一个**次数恰为 `k`**的有理多项式。计时规则不变：**车辆 `j` 停妥之后，车辆 `j−t` 才离开**。
 
-This repository contains a self-contained manuscript with two ordinary proofs, the complete primary proof formalized in Lean, and reproducible finite checks. It is a public research repository, **not a claim of journal acceptance, external human peer review, or a first solution**.
+This repository contains a self-contained manuscript with two ordinary proofs, Lean formalizations of the primary theorem and its integer-coefficient strengthening, and reproducible finite checks. It is a public research repository, **not a claim of journal acceptance, external human peer review, or a first solution**.
 
 ## Statement
 
@@ -20,12 +20,12 @@ Q_{t,m,k}(n)=a(t,m,k,n)\quad\text{for every }n\ge m-1.
 
 There is no upper bound on `t`. The case `n=m−1`, including `m=2,n=1`, is included. The count is of **preference lists**, not distinct outcomes or history pairs. No recurrence, template bijection, embedding formula, or degree bound is assumed by the final theorem.
 
-**Integer-coefficient strengthening.** Appendix A.4 also proves that this same polynomial belongs to `ℤ[X]`, not merely that it takes integer values. This is an ordinary consequence of the inclusion–exclusion formula; **the integer-coefficient corollary is not separately formalized in Lean**. The formalized original statement above is unchanged. The manuscript also isolates the component-width lemma and gives two explicit `m=4, k=2` examples.
+**Integer-coefficient strengthening — also formalized.** This same polynomial belongs to `ℤ[X]`; it does not merely take integer values. **`MeteredParking.question3_integral`** constructs an integer polynomial mapping to the original rational polynomial, with the same exact degree and evaluation at every `n ≥ m−1`. The Lean proof uses canonical forced-component reordering and factorial cancellation. Appendix A.4 gives a separate ordinary consequence of the inclusion–exclusion formula; that independent appendix proof is not itself formalized. The original rational theorem is unchanged. The manuscript also isolates the component-width lemma and gives two explicit `m=4, k=2` examples.
 
 ## Read the proofs
 
 - [Paper PDF](paper/main.pdf), [Markdown](paper/main.md), [TeX source](paper/main.tex): the primary rank-template/gap proof, plus a complete independent collision inclusion–exclusion proof in Appendix A.
-- [Lean source](AiMathLab.lean): theorem **`MeteredParking.question3`**. The root module retains the name `AiMathLab` for source continuity but contains only this problem; its only import is `Mathlib`.
+- [Lean source](AiMathLab.lean): theorems **`MeteredParking.question3`** and **`MeteredParking.question3_integral`**. The root module retains the name `AiMathLab` for source continuity but contains only this problem; its only import is `Mathlib`.
 - [Formalization and verification record](verification/LEAN.md): statement correspondence, trust assumptions, exact reproduction commands and observed results.
 - [Finite verification](verification/README.md): independent definition enumeration, template generation, both inverse checks and targeted mutations.
 - [Bounded literature audit](literature/question3_literature_audit_2026-09-12.md): checked sources and unresolved access/search limits.
@@ -45,7 +45,7 @@ LEAN_NUM_THREADS=1 lake env leanchecker -v AiMathLab
 
 `lean-toolchain` pins Lean **4.31.0**. `lake-manifest.json` pins mathlib to `fabf563a7c95a166b8d7b6efca11c8b4dc9d911f` and records all transitive dependencies. The first command downloads public dependency caches and requires internet access. Once the pinned dependencies are present, checking the proof needs no solver service, private repository, or local path override. Do not run `lake update` to reproduce the checked snapshot.
 
-The final declaration is:
+The original rational declaration is:
 
 ```lean
 MeteredParking.question3 (t m k : ℕ)
@@ -56,7 +56,24 @@ MeteredParking.question3 (t m k : ℕ)
         (MeteredParking.countSuccessfulPreferences t m k n : ℚ)
 ```
 
-Its axiom dependencies are the standard Lean foundations `propext`, `Classical.choice`, and `Quot.sound`; no custom axiom, `sorry`, or `native_decide` is used. `leanchecker` replays declarations with the **same Lean kernel**, not a second independently implemented checker.
+The integer-coefficient strengthening is:
+
+```lean
+MeteredParking.question3_integral (t m k : ℕ)
+    (ht : 1 ≤ t) (hm : 2 ≤ m) (hk : 1 ≤ k) (hkm : k ≤ m - 1) :
+  ∃ P : Polynomial ℤ,
+    P.map (Int.castRingHom ℚ) = MeteredParking.question3Polynomial t m k ∧
+    P.natDegree = k ∧
+    ∀ n : ℕ, m - 1 ≤ n →
+      P.eval (n : ℤ) =
+        (MeteredParking.countSuccessfulPreferences t m k n : ℤ)
+```
+
+Both theorems depend only on the standard Lean foundations `propext`, `Classical.choice`, and `Quot.sound`; no custom axiom, `sorry`, or `native_decide` is used. `leanchecker` replays declarations with the **same Lean kernel**, not a second independently implemented checker. The separate import-level statement check is reproducible with:
+
+```sh
+lake env lean -DwarningAsError=true --stdin < verification/consumer-check.txt
+```
 
 ## Run the finite checks
 

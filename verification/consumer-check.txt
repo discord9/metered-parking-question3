@@ -1,0 +1,15 @@
+import AiMathLab
+
+#check (MeteredParking.question3_integral :
+  ∀ (t m k : ℕ), 1 ≤ t → 2 ≤ m → 1 ≤ k → k ≤ m - 1 →
+    ∃ P : Polynomial ℤ,
+      P.map (Int.castRingHom ℚ) = MeteredParking.question3Polynomial t m k ∧
+      P.natDegree = k ∧
+      ∀ n : ℕ, m - 1 ≤ n →
+        P.eval (n : ℤ) = (MeteredParking.countSuccessfulPreferences t m k n : ℤ))
+
+#print axioms MeteredParking.RankTemplate.countNumerator_map
+#print axioms MeteredParking.question3IntegerPolynomial_map
+#print axioms MeteredParking.question3IntegerPolynomial_natDegree
+#print axioms MeteredParking.question3IntegerPolynomial_eval
+#print axioms MeteredParking.question3_integral

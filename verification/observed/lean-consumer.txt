@@ -1,0 +1,14 @@
+MeteredParking.question3_integral : ∀ (t m k : ℕ),
+  1 ≤ t →
+    2 ≤ m →
+      1 ≤ k →
+        k ≤ m - 1 →
+          ∃ P,
+            Polynomial.map (Int.castRingHom ℚ) P = MeteredParking.question3Polynomial t m k ∧
+              P.natDegree = k ∧
+                ∀ (n : ℕ), m - 1 ≤ n → Polynomial.eval (↑n) P = ↑(MeteredParking.countSuccessfulPreferences t m k n)
+'MeteredParking.RankTemplate.countNumerator_map' depends on axioms: [propext, Classical.choice, Quot.sound]
+'MeteredParking.question3IntegerPolynomial_map' depends on axioms: [propext, Classical.choice, Quot.sound]
+'MeteredParking.question3IntegerPolynomial_natDegree' depends on axioms: [propext, Classical.choice, Quot.sound]
+'MeteredParking.question3IntegerPolynomial_eval' depends on axioms: [propext, Classical.choice, Quot.sound]
+'MeteredParking.question3_integral' depends on axioms: [propext, Classical.choice, Quot.sound]

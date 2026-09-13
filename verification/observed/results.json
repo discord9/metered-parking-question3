@@ -1,5 +1,5 @@
 {
-  "date": "2026-09-12",
+  "date": "2026-09-13",
   "lean": "4.31.0",
   "lake": "5.0.0",
   "commands": [
@@ -12,6 +12,11 @@
       "command": "lake env lean -DwarningAsError=true AiMathLab.lean",
       "exit_status": 0,
       "stdout": "lean-strict.txt"
+    },
+    {
+      "command": "lake env lean -DwarningAsError=true --stdin < verification/consumer-check.txt",
+      "exit_status": 0,
+      "stdout": "lean-consumer.txt"
     },
     {
       "command": "LEAN_NUM_THREADS=1 lake env leanchecker -v AiMathLab",
@@ -31,16 +36,21 @@
     "public_dependency_cache_prepopulated": true,
     "project_artifact_built_from_source": true
   },
-  "source_sha256": "a1e2e66d8e41709f9d52bfda05f49b28b4a0b3918b826850020af0111833eb4d",
-  "olean_sha256": "afacf55cb33802c0333d80ce93451efc4bcfb1f66bc98c1d14879d88eabcbd37",
+  "source_sha256": "5ac31a31c98242fc6c96d46de7d75fe24e2737ef9db235a2aa4188f5170d883c",
+  "olean_sha256": "3fdbcfd9ce8f65f18b94110794b63f7041a3fe8c8545db5fca2ee61fc54604e1",
   "olean_unchanged_by_replay": true,
-  "printed_parking_axiom_lists_checked": 76,
-  "final_theorem": "MeteredParking.question3",
+  "printed_parking_axiom_lists_checked": 135,
+  "final_theorem": "MeteredParking.question3_integral",
   "final_axioms": [
     "propext",
     "Classical.choice",
     "Quot.sound"
   ],
   "proof_checker_note": "leanchecker replays declarations with the same Lean kernel; it is not a second independent kernel.",
-  "dependency_setup_note": "The public upstream dependency sources and compiled caches were prepopulated at the locked revisions. The network download command was not rerun during this offline validation."
+  "dependency_setup_note": "The public upstream dependency sources and compiled caches were prepopulated at the locked revisions. The network download command was not rerun during this offline validation.",
+  "standard_only_axiom_lists": 133,
+  "axiom_free_lists": 2,
+  "consumer_axiom_lists_checked": 5,
+  "original_theorem": "MeteredParking.question3",
+  "all_stderr_empty": true
 }

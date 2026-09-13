@@ -16,8 +16,8 @@
 \begin{document}
 \maketitle
 \begin{center}
-\textbf{Research manuscript; primary Theorem~\ref{main} formally verified.}\\
-Lean 4.31.0 formal verification of the primary Theorem~\ref{main}: complete.
+\textbf{Research manuscript; primary Theorem~\ref{main} and integer-coefficient corollary formally verified.}\\
+Lean 4.31.0 formal verification of the primary Theorem~\ref{main} and its integer-coefficient corollary: complete.
 \end{center}
 \begin{abstract}
 For fixed meter duration $t\ge1$, number of cars $m\ge2$, and number of lucky cars $1\le k\le m-1$, we prove that the number of successful preference lists on $n$ spaces is a polynomial in $n$ of degree exactly $k$ for every integer $n\ge m-1$. The departure rule is that an expiring car leaves only after the current car parks. A finite rank template records all distinct outcomes, including reused spaces, and the intervals traversed by cars. Its embeddings are counted by a binomial polynomial whose degree is the number of forced traversal components. Each component contains a lucky car, and an explicit template attains $k$ components. An independent inclusion--exclusion proof is provided in Appendix~A. Finite computational checks and the status of formal verification are reported separately from the proof.
@@ -175,8 +175,9 @@ The template check covers $m=2,\ldots,4$, $t=1,\ldots,m$, and $n=m-1,m,m+1$. It 
 
 From the paper directory, run \texttt{python3 ../verification/run\_checks.py} to reproduce the bounded finite checks against the reference JSON in \path{../verification/expected/}. Instructions are in \path{../verification/README.md}; formalization commands and verification records are in \path{../verification/LEAN.md}. Finite checks do not prove the all-parameter statement.
 
-\medskip\noindent\textbf{Lean 4.31.0 verification of the primary Theorem~\ref{main}: complete.}
-The primary all-parameter Question~3 statement is formalized as \texttt{MeteredParking.question3} in \path{../AiMathLab.lean}, with degree exactly $k$ for all $n\ge m-1$. The formal proof uses the rank-template argument with the finite cover for $c\le k$. The independent inclusion--exclusion appendix, including its integer-coefficient corollary below, is not separately formalized. The ordinary proof, finite checks, formal verification, and external mathematical review are distinct activities.
+\medskip\noindent\textbf{Lean 4.31.0 verification of the primary Theorem~\ref{main} and its integer-coefficient corollary: complete.}
+
+The primary all-parameter Question~3 statement is formalized as \texttt{MeteredParking.question3} in \path{../AiMathLab.lean}, with degree exactly $k$ for all $n\ge m-1$. Its proof uses the rank-template argument with the finite cover for $c\le k$. \path{MeteredParking.question3_integral} proves that the integer polynomial maps to the original rational polynomial, has exact degree $k$, and agrees for every $n\ge m-1$, using canonical forced-component reordering and factorial cancellation. The independent inclusion--exclusion appendix is not separately formalized. The ordinary proof, finite checks, formal verification, and external mathematical review are distinct activities.
 
 \appendix
 \section{An independent collision inclusion--exclusion proof}
@@ -275,7 +276,7 @@ For the original parameters $t\ge1$, $m\ge2$, and $1\le k\le m-1$, the polynomia
 \begin{proof}
 The choices of $D$ and $F$ are finite and independent of $n$. For each consistent system, the difference equations give the integer width $w_C$. Thus \eqref{R} is a finite signed sum of products $(X-w_C)$, with no division, so $R_{t,m,k}(X)\in\mathbb Z[X]$. Via the embedding $\mathbb Z\hookrightarrow\mathbb Q$, this polynomial and the primary $Q_{t,m,k}$ agree at every integer $n\ge m-1$. Their difference has infinitely many roots, hence $Q_{t,m,k}=R_{t,m,k}$. The preceding subsection gives the count identity and exact degree.
 \end{proof}
-This ordinary appendix strengthening is not separately formalized in Lean.
+The integer-coefficient corollary is formalized by the alternative route described above; this independent inclusion--exclusion proof is not separately formalized in Lean.
 
 \section*{Literature scope and disclosure}
 The source question is Question~3 on page~32 of the 2025 journal version of \cite{metered}. A supplied literature audit dated 2026-09-12 reports that no complete prior answer was found among the publicly searchable materials it could verify. That search was bounded: it was neither an exhaustive citation-database review nor direct confirmation from the original authors, and it left inaccessible material unresolved. It cannot exclude unpublished, unindexed, or inaccessible answers. No first-solution or definitive novelty claim is made here. The detailed audit is supplied separately at \path{../literature/question3_literature_audit_2026-09-12.md}; this manuscript does not claim independent full-text review of the other works listed there.

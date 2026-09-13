@@ -2,9 +2,9 @@
 
 2026-09-12
 
-**Research manuscript; primary Theorem 1 formally verified.**
+**Research manuscript; primary Theorem 1 and integer-coefficient corollary formally verified.**
 
-Lean 4.31.0 formal verification of primary Theorem 1: complete.
+Lean 4.31.0 formal verification of primary Theorem 1 and its integer-coefficient corollary: complete.
 
 ## Abstract
 
@@ -190,7 +190,7 @@ The template check covers \(m=2,\ldots,4\), \(t=1,\ldots,m\), and \(n=m-1,m,m+1\
 
 From the paper directory, run `python3 ../verification/run_checks.py` to reproduce the bounded finite checks against the reference JSON in `../verification/expected/`. Instructions are in `../verification/README.md`; formalization commands and verification records are in `../verification/LEAN.md`. Finite checks do not prove the all-parameter statement.
 
-**Lean 4.31.0 verification of primary Theorem 1: complete.** The primary all-parameter Question 3 statement is formalized as `MeteredParking.question3` in `../AiMathLab.lean`, with degree exactly \(k\) for all \(n\ge m-1\). The formal proof uses the rank-template argument with the finite cover for \(c\le k\). The independent inclusion–exclusion appendix, including its integer-coefficient corollary below, is not separately formalized. The ordinary proof, finite checks, formal verification, and external mathematical review are distinct activities.
+**Lean 4.31.0 verification of primary Theorem 1 and its integer-coefficient corollary: complete.** The primary all-parameter Question 3 statement is formalized as `MeteredParking.question3` in `../AiMathLab.lean`, with degree exactly \(k\) for all \(n\ge m-1\). Its proof uses the rank-template argument with the finite cover for \(c\le k\). `MeteredParking.question3_integral` proves that the integer polynomial maps to the original rational polynomial, has exact degree \(k\), and agrees for every \(n\ge m-1\), using canonical forced-component reordering and factorial cancellation. The independent inclusion–exclusion appendix is not separately formalized. The ordinary proof, finite checks, formal verification, and external mathematical review are distinct activities.
 
 ## Appendix A. An independent collision inclusion–exclusion proof
 
@@ -322,7 +322,7 @@ a_{t,m,k}(n)=R_{t,m,k}(n)
 
 *Proof.* The choices of \(D\) and \(F\) are finite and independent of \(n\). For each consistent system, the difference equations give the integer width \(w_C\). Thus (13) is a finite signed sum of products \((X-w_C)\), with no division, so \(R_{t,m,k}(X)\in\mathbb Z[X]\). Via the embedding \(\mathbb Z\hookrightarrow\mathbb Q\), this polynomial and the primary \(Q_{t,m,k}\) agree at every integer \(n\ge m-1\). Their difference has infinitely many roots, hence \(Q_{t,m,k}=R_{t,m,k}\). The preceding subsection gives the count identity and exact degree. ∎
 
-This ordinary appendix strengthening is not separately formalized in Lean.
+The integer-coefficient corollary is formalized by the alternative route described above; this independent inclusion–exclusion proof is not separately formalized in Lean.
 
 ## Literature scope and disclosure
 
