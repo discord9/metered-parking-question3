@@ -249,3 +249,215 @@ end MeteredParking.OneMeter
 #print axioms MeteredParking.OneMeter.totalCount_one
 #print axioms MeteredParking.OneMeter.isParking_init
 #print axioms MeteredParking.OneMeter.isParking_snoc_iff
+
+/-!
+## Last-outcome fibers and tagged extension counts
+
+Every fiber consists of actual successful histories. The two summands of the
+extension equivalence retain their tags: a prefix ending immediately before
+`j` can occur in both, yielding the distinct appended preferences `j` and its
+predecessor. Cardinalities transfer back to the direct preference count through
+`card_history`. All balances in this section are in the natural numbers.
+-/
+
+namespace MeteredParking.OneMeter
+
+open scoped BigOperators
+
+/-- Only nonempty histories have a last outcome. -/
+def lastOutcome {r n : ℕ} (H : History (r + 1) n) : Fin n :=
+  H.1.2 (Fin.last r)
+
+/-- Histories of length `r + 1` whose final outcome is `j`. -/
+def LastFiber (r n : ℕ) (j : Fin n) :=
+  {H : History (r + 1) n // lastOutcome H = j}
+
+noncomputable instance lastFiberFintype (r n : ℕ) (j : Fin n) : Fintype (LastFiber r n j) := by
+  classical
+  unfold LastFiber
+  infer_instance
+
+private def prefixHistory {r n : ℕ} (H : History (r + 1 + 1) n) : History (r + 1) n :=
+  ⟨(Fin.init H.1.1, Fin.init H.1.2), isParking_init H.2⟩
+
+private theorem lastFiber_step {r n : ℕ} {j : Fin n} (H : LastFiber (r + 1) n j) :
+    (H.1.1.1 (Fin.last (r + 1)) = j ∧ j ≠ lastOutcome (prefixHistory H.1)) ∨
+      (H.1.1.1 (Fin.last (r + 1)) = lastOutcome (prefixHistory H.1) ∧
+        (j : ℕ) = (lastOutcome (prefixHistory H.1) : ℕ) + 1) := by
+  have hs := (isParking_snoc_iff (Fin.init H.1.1.1) (Fin.init H.1.1.2)
+    (H.1.1.1 (Fin.last (r + 1))) (H.1.1.2 (Fin.last (r + 1)))).mp
+      (by simpa only [Fin.snoc_init_self] using H.1.2)
+  have hend : H.1.1.2 (Fin.last (r + 1)) = j := H.2
+  simpa only [hend, prefixHistory, lastOutcome] using hs.2
+
+private def extendLast {r n : ℕ} (j : Fin n) :
+    ({H : History (r + 1) n // lastOutcome H ≠ j} ⊕
+      {H : History (r + 1) n // (lastOutcome H : ℕ) + 1 = (j : ℕ)}) →
+        LastFiber (r + 1) n j
+  | Sum.inl H =>
+      ⟨⟨(Fin.snoc H.1.1.1 j, Fin.snoc H.1.1.2 j),
+        (isParking_snoc_iff H.1.1.1 H.1.1.2 j j).mpr
+          ⟨H.1.2, Or.inl ⟨rfl, Ne.symm H.2⟩⟩⟩, by simp only [lastOutcome, Fin.snoc_last]⟩
+  | Sum.inr H =>
+      ⟨⟨(Fin.snoc H.1.1.1 (lastOutcome H.1), Fin.snoc H.1.1.2 j),
+        (isParking_snoc_iff H.1.1.1 H.1.1.2 (lastOutcome H.1) j).mpr
+          ⟨H.1.2, Or.inr ⟨rfl, H.2.symm⟩⟩⟩, by simp only [lastOutcome, Fin.snoc_last]⟩
+
+/-- Data are chosen by decidable equality of the appended preference with `j`.
+The propositional alternatives from parking are used only to prove membership. -/
+private def splitLast {r n : ℕ} {j : Fin n} (H : LastFiber (r + 1) n j) :
+    {H : History (r + 1) n // lastOutcome H ≠ j} ⊕
+      {H : History (r + 1) n // (lastOutcome H : ℕ) + 1 = (j : ℕ)} := by
+  let P := prefixHistory H.1
+  exact if hb : H.1.1.1 (Fin.last (r + 1)) = j then
+    Sum.inl ⟨P, by
+      rcases lastFiber_step H with h | h
+      · exact Ne.symm h.2
+      · intro heq
+        have hstep : (j : ℕ) = (lastOutcome P : ℕ) + 1 := h.2
+        have hval := congrArg Fin.val heq
+        omega⟩
+  else
+    Sum.inr ⟨P, by
+      rcases lastFiber_step H with h | h
+      · exact False.elim (hb h.1)
+      · exact h.2.symm⟩
+
+private theorem splitLast_extendLast {r n : ℕ} (j : Fin n)
+    (z : {H : History (r + 1) n // lastOutcome H ≠ j} ⊕
+      {H : History (r + 1) n // (lastOutcome H : ℕ) + 1 = (j : ℕ)}) :
+    splitLast (extendLast j z) = z := by
+  rcases z with ⟨⟨⟨a, p⟩, hp⟩, hne⟩ | ⟨⟨⟨a, p⟩, hp⟩, hstep⟩
+  · simp [splitLast, extendLast, prefixHistory]
+  · have hne : p (Fin.last r) ≠ j := by
+      intro h
+      have hval := congrArg Fin.val h
+      change (p (Fin.last r) : ℕ) + 1 = (j : ℕ) at hstep
+      omega
+    simp [splitLast, extendLast, prefixHistory, lastOutcome, hne]
+
+private theorem extendLast_splitLast {r n : ℕ} {j : Fin n} (H : LastFiber (r + 1) n j) :
+    extendLast j (splitLast H) = H := by
+  rcases H with ⟨⟨⟨a, p⟩, hp⟩, hpj⟩
+  have hend : p (Fin.last (r + 1)) = j := hpj
+  by_cases hb : a (Fin.last (r + 1)) = j
+  · simp only [splitLast, dif_pos hb, extendLast]
+    apply Subtype.ext
+    apply Subtype.ext
+    apply Prod.ext
+    · change Fin.snoc (Fin.init a) j = a
+      rw [← hb, Fin.snoc_init_self]
+    · change Fin.snoc (Fin.init p) j = p
+      rw [← hend, Fin.snoc_init_self]
+  · have hbi : a (Fin.last (r + 1)) =
+        lastOutcome (prefixHistory (⟨(a, p), hp⟩ : History (r + 1 + 1) n)) := by
+      have hs := lastFiber_step (⟨⟨(a, p), hp⟩, hpj⟩ : LastFiber (r + 1) n j)
+      exact (hs.resolve_left (fun h => hb h.1)).1
+    simp only [splitLast, dif_neg hb, extendLast]
+    apply Subtype.ext
+    apply Subtype.ext
+    apply Prod.ext
+    · change Fin.snoc (Fin.init a)
+        (lastOutcome (prefixHistory (⟨(a, p), hp⟩ : History (r + 1 + 1) n))) = a
+      rw [← hbi, Fin.snoc_init_self]
+    · change Fin.snoc (Fin.init p) j = p
+      rw [← hend, Fin.snoc_init_self]
+
+/-- The two tagged extension mechanisms count distinct appended preferences,
+even when the same prefix belongs to both summands. -/
+def lastFiberEquivExtensions (r n : ℕ) (j : Fin n) :
+    LastFiber (r + 1) n j ≃
+      ({H : History (r + 1) n // lastOutcome H ≠ j} ⊕
+        {H : History (r + 1) n // (lastOutcome H : ℕ) + 1 = (j : ℕ)}) where
+  toFun := splitLast
+  invFun := extendLast j
+  left_inv := extendLast_splitLast
+  right_inv := splitLast_extendLast j
+
+/-- Partition nonempty histories by their last outcome and transfer back to
+ordered preferences using the already-proved forgetful equivalence. -/
+theorem totalCount_eq_sum_lastFiber (r n : ℕ) :
+    totalCount (r + 1) n = ∑ j : Fin n, Fintype.card (LastFiber r n j) := by
+  classical
+  calc
+    totalCount (r + 1) n = Fintype.card (History (r + 1) n) := (card_history _ _).symm
+    _ = Fintype.card (Σ j : Fin n, LastFiber r n j) :=
+      (Fintype.card_congr (Equiv.sigmaFiberEquiv (@lastOutcome r n))).symm
+    _ = _ := Fintype.card_sigma
+
+/-- Exactly one one-car preference/history ends at a specified existing spot. -/
+theorem card_lastFiber_zero (n : ℕ) (j : Fin n) : Fintype.card (LastFiber 0 n j) = 1 := by
+  letI : Unique (LastFiber 0 n j) :=
+    { default :=
+        ⟨⟨(fun _ => j, fun _ => j), (isParking_one_iff _ _).mpr rfl⟩, rfl⟩
+      uniq := by
+        rintro ⟨⟨⟨a, p⟩, hp⟩, hj⟩
+        have hap : a = p := (isParking_one_iff a p).mp hp
+        have hpj : p = fun _ => j := by
+          funext i
+          have hi : i = Fin.last 0 := by
+            apply Fin.ext
+            have hiBound := i.isLt
+            change (i : ℕ) = 0
+            omega
+          have hend : p (Fin.last 0) = j := hj
+          exact (congrArg p hi).trans hend
+        apply Subtype.ext
+        apply Subtype.ext
+        exact Prod.ext (hap.trans hpj) hpj }
+  exact Fintype.card_unique
+
+/-- An additive natural-number balance, with the complement bound proved before
+cancelling truncated subtraction. The right side uses the direct preference count. -/
+theorem card_lastFiber_balance (r n : ℕ) (j : Fin n) :
+    Fintype.card (LastFiber (r + 1) n j) + Fintype.card (LastFiber r n j) =
+      totalCount (r + 1) n +
+        Fintype.card {H : History (r + 1) n // (lastOutcome H : ℕ) + 1 = (j : ℕ)} := by
+  classical
+  have hle : Fintype.card (LastFiber r n j) ≤ Fintype.card (History (r + 1) n) :=
+    Fintype.card_subtype_le (fun H : History (r + 1) n => lastOutcome H = j)
+  have hcompl : Fintype.card {H : History (r + 1) n // lastOutcome H ≠ j} =
+      Fintype.card (History (r + 1) n) - Fintype.card (LastFiber r n j) :=
+    Fintype.card_subtype_compl (fun H : History (r + 1) n => lastOutcome H = j)
+  have hcount := Fintype.card_congr (lastFiberEquivExtensions r n j)
+  rw [Fintype.card_sum] at hcount
+  have htotal := card_history (r + 1) n
+  omega
+
+/-- The first physical spot has no predecessor outcome; no empty-history state is used. -/
+theorem card_predecessor_zero {r n : ℕ} (j : Fin n) (hj : (j : ℕ) = 0) :
+    Fintype.card {H : History (r + 1) n // (lastOutcome H : ℕ) + 1 = (j : ℕ)} = 0 := by
+  letI : IsEmpty {H : History (r + 1) n // (lastOutcome H : ℕ) + 1 = (j : ℕ)} :=
+    ⟨fun H => by
+      have h := H.2
+      omega⟩
+  exact Fintype.card_eq_zero
+
+/-- A valid natural successor identifies the predecessor subtype with the
+corresponding equality fiber, including at the final physical spot. -/
+theorem card_predecessor_of_adj {r n : ℕ} (k j : Fin n)
+    (hadj : (k : ℕ) + 1 = (j : ℕ)) :
+    Fintype.card {H : History (r + 1) n // (lastOutcome H : ℕ) + 1 = (j : ℕ)} =
+      Fintype.card (LastFiber r n k) := by
+  classical
+  let e : {H : History (r + 1) n // (lastOutcome H : ℕ) + 1 = (j : ℕ)} ≃
+      LastFiber r n k :=
+    { toFun := fun H => ⟨H.1, by
+        apply Fin.ext
+        have h := H.2
+        omega⟩
+      invFun := fun H => ⟨H.1, by
+        have h := congrArg Fin.val H.2
+        omega⟩
+      left_inv := by intro H; rfl
+      right_inv := by intro H; rfl }
+  exact Fintype.card_congr e
+
+end MeteredParking.OneMeter
+
+#print axioms MeteredParking.OneMeter.lastFiberEquivExtensions
+#print axioms MeteredParking.OneMeter.totalCount_eq_sum_lastFiber
+#print axioms MeteredParking.OneMeter.card_lastFiber_zero
+#print axioms MeteredParking.OneMeter.card_lastFiber_balance
+#print axioms MeteredParking.OneMeter.card_predecessor_zero
+#print axioms MeteredParking.OneMeter.card_predecessor_of_adj
