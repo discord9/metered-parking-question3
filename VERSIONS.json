@@ -69,7 +69,7 @@
   "content_sha256": {
     "AiMathLab.lean": "5ac31a31c98242fc6c96d46de7d75fe24e2737ef9db235a2aa4188f5170d883c",
     "lean-toolchain": "efac0b94923b2d8b6840cd35be9177ad0fc5ab2332f4f4311c98712cee92fdee",
-    "lakefile.toml": "521fdfc79cb553b5da45ac761cd6a649fc67a5587c675d14fd394790523cb52d",
+    "lakefile.toml": "b8fffd7403c7d3fa239edbcfdfdf25967581d1a16d3b057fe0974506d8b9b833",
     "lake-manifest.json": "68c1875da98acc9b44200ff4a02d2daf0619975980437c5effd7337da08aab3e",
     "paper/main.tex": "245cc7bd3c982b90d108207213b0127e6e85f57f124447cc23a97454cddd5c8d",
     "paper/main.md": "069e48dfe646672034047051db2937349fbcc439e97c5efe5877370497b5fd44",
@@ -80,12 +80,46 @@
     "verification/run_checks.py": "2515b715d2ed7f4303007818fcfcd8df80949e2249986e3c4f702e3492add40a",
     "verification/expected/definition_result.json": "8d41d25efacc01d888615a12a30b2e39bc36121495003f78d3f0b8a90b657f97",
     "verification/expected/template_result.json": "3b89431f9c9812822192c5fdc3391b63ba2d4d2c132c3988a0b9935ae4641712",
-    "verification/consumer-check.txt": "4a41dd5af567cba906f2fbe59232d5cf65256e6228ca9f3b0a81e4fbe4a81cf1"
+    "verification/consumer-check.txt": "4a41dd5af567cba906f2fbe59232d5cf65256e6228ca9f3b0a81e4fbe4a81cf1",
+    "Main.lean": "5afccee7efe79b88865314718576c08e2bb437e000526654e5be99546687e64c",
+    "one-meter/main.md": "f14781219ce4b74bc287888b481f38e25731bfd4448e040f93c7d44f08e77b2a",
+    "one-meter/main.tex": "6ef4d0b454fac8e3a3bfda30f5fa53095dc061116ad5a4c81638f87e976395c5",
+    "one-meter/main.pdf": "95d95f186a961ab1dd80a03a93eb798c5291f95d778445b9ced05e4d53305583",
+    "one-meter/README.md": "3870840a39dc19624126018fe8f0399e98c6e678bca10c443f9224f3cf0aaaf8",
+    "literature/one-meter_literature_audit_2026-09-13.md": "9a6708bcf537a3e92885bcfb21e852ecde9c359d773fd18e79f07d97623fedd2",
+    "verification/one-meter/LEAN.md": "502415aab23ccb5c24f5c010479833d5e99ee089a46151e9663f2472ca065047",
+    "verification/one-meter/check_counts.py": "bc148cfb7511b4fb1a291eb853824db9c5025926dedf51c6fb8d8341d1cc00df",
+    "verification/one-meter/expected.json": "feb77da60a75b743d9a65a7f40e185d81aea46e4e5f99ec8b357ef64333a6f3d",
+    "verification/one-meter/consumer-check.txt": "6d01879aee09fa810237cecd43548d62b1b0c1494322ff00342a8745ad04ec51"
   },
   "observed_verification": "verification/observed/results.json",
   "typesetter": "Tectonic 0.15.0",
   "paper_pages": 8,
   "license_status": "No general reuse license selected; dependencies retain their upstream licenses.",
   "formalization_scope": "Original rational-polynomial Theorem 1 and its integer-coefficient corollary, with polynomial map equality, exact degree and every n >= m-1. The independent inclusion-exclusion appendix proof is not formalized.",
-  "original_theorem": "MeteredParking.question3"
+  "original_theorem": "MeteredParking.question3",
+  "one_meter": {
+    "source": "Main.lean",
+    "source_lines": 931,
+    "formalization_status": "complete",
+    "scope": "Original one-meter successful ordered preferences for all n>=1,m>=0; actual-count GF, explicit scalar recurrence, bounded Lucas and exact first correction, base and capacity-one/two cases.",
+    "final_theorems": [
+      "MeteredParking.OneMeter.generatingSeries_eq_quotient",
+      "MeteredParking.OneMeter.coeff_generatingSeries",
+      "MeteredParking.OneMeter.totalCount_recurrence",
+      "MeteredParking.OneMeter.totalCount_lucas",
+      "MeteredParking.OneMeter.totalCount_firstCorrection",
+      "MeteredParking.OneMeter.totalCount_zero",
+      "MeteredParking.OneMeter.totalCount_one",
+      "MeteredParking.OneMeter.totalCount_capacity_one",
+      "MeteredParking.OneMeter.totalCount_capacity_two",
+      "MeteredParking.OneMeter.totalCount_two_two"
+    ],
+    "ordinary_proof": "Last-outcome decomposition and finite weighted geometric sum.",
+    "formalized_route": "Exact tagged preference extensions, finite state cardinalities, division-free state elimination, polynomial coefficient extraction and a local residual unit inverse.",
+    "paper": "one-meter/main.pdf",
+    "paper_pages": 4,
+    "observed_verification": "verification/one-meter/observed/results.json",
+    "question3_preservation": "AiMathLab.lean, paper sources/PDF, lean-toolchain and lake-manifest.json are byte-identical to the preceding accepted Question3 snapshot."
+  }
 }

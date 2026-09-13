@@ -6,3 +6,7 @@ paper/*.aux
 paper/*.log
 paper/*.out
 paper/*.synctex.gz
+one-meter/*.aux
+one-meter/*.log
+one-meter/*.out
+one-meter/*.synctex.gz

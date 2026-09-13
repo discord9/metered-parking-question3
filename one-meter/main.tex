@@ -1,0 +1,186 @@
+\documentclass[11pt]{article}
+\usepackage[margin=1in]{geometry}
+\usepackage{amsmath,amssymb,amsthm}
+\usepackage[hidelinks]{hyperref}
+
+\newcommand{\ind}{\mathbf 1}
+\title{One-meter parking at every car length}
+\author{}
+\date{2026-09-13}
+
+\begin{document}
+\maketitle
+
+\section*{Status and scope}
+
+This is an ordinary-mathematics proof with a companion Lean formalization in
+root Main.lean. The formalization proves the actual-count generating function,
+scalar recurrence, Lucas range, first correction, and boundary cases by
+division-free finite-state elimination, not a line-by-line formalization of
+this note's $q$/geometric-sum presentation. A bounded literature audit does
+not establish priority. The note gives an explicit
+all-length consequence of the last-outcome decomposition used in the source
+paper; it makes no claim that the parking model or starting state decomposition
+is new.
+
+Fix an integer $n\geq1$. There are $n$ spaces and every car has meter duration
+$t=1$. Write $[n]=\{1,\ldots,n\}$. A car has an ordered preference $a\in[n]$
+and parks at the first available space at or to the right of $a$, failing if
+there is none. The previous car departs \emph{after} the next car parks, so a
+vacated space may be reused by a later car. Let $F_m(n)$ be the number of successful ordered
+preference lists of length $m$, with $F_0(n)=1$, and put
+\[
+ G_n(x)=\sum_{m\geq0}F_m(n)x^m.
+\]
+
+\section*{The all-length formula}
+
+\textbf{Theorem.} For every $n\geq1$,
+\[
+ \boxed{G_n(x)=\frac{(1+x)^n}
+ {(1-nx+x^2)(1+x)^n-x^{n+2}}.}
+\]
+For $2\leq j\leq n$, define
+\[
+ c_{n,j}=n\binom n{j-1}-\binom nj-\binom n{j-2}.
+\]
+Then
+\[
+ \boxed{F_m(n)=\sum_{j=2}^n c_{n,j}F_{m-j}(n)\qquad(m\geq n+1).}
+\]
+Together with $F_0(n)=1$, $F_1(n)=n$, and
+\[
+ F_m(n)=nF_{m-1}(n)-F_{m-2}(n)\qquad(2\leq m\leq n),
+\]
+this gives sufficient initial data. When $n=1$, the displayed sum is empty.
+No assertion about minimal recurrence order is intended.
+
+\subsection*{Proof}
+
+For a nonempty successful prefix of length $r$, precisely its last car remains
+immediately before the next search. Let $z_i(r)$ count the prefixes whose last
+outcome is space $i$. If the next preference is $a$, then, from previous
+outcome $i$:
+\begin{itemize}
+\item if $a\ne i$, the next outcome is $a$;
+\item if $a=i<n$, the next outcome is $i+1$;
+\item if $a=i=n$, parking fails.
+\end{itemize}
+Thus the transition from outcome $i$ to outcome $j$ has multiplicity
+\[
+ w_{ij}=\ind_{j\ne i}+\ind_{j=i+1}.
+\]
+The multiplicity is importantly two when $j=i+1$: the distinct preferences
+$i$ and $i+1$ both produce that outcome. Each extension has a unique prefix
+and appended preference, so these transitions count ordered lists exactly
+once. Consequently, for every $r\geq1$,
+\[
+ z_j(r+1)=F_r(n)-z_j(r)+z_{j-1}(r),\qquad
+ z_0(r)=0,\qquad z_j(1)=1,
+\]
+and $F_r(n)=\sum_{j=1}^n z_j(r)$. This is the source paper's last-outcome
+decomposition. Its local justification applies at every length, rather than
+only in the range used there to obtain the bounded Lucas recurrence.
+
+Work in the formal-series ring $\mathbb Z[[x]]$. Set
+\[
+ Z_j=\sum_{r\geq1}z_j(r)x^r,\qquad Z_0=0,\qquad q=\frac{x}{1+x}.
+\]
+Multiplying the state equation by $x^{r+1}$ and summing over $r\geq1$ gives
+\[
+ Z_j-x=x(G_n-1)-xZ_j+xZ_{j-1},\qquad
+ Z_j=q(G_n+Z_{j-1})=G_n\sum_{\ell=1}^j q^\ell.
+\]
+After summing over $j$, this becomes $G_n-1=G_nS_n$, where
+\[
+ S_n=\sum_{\ell=1}^n(n+1-\ell)q^\ell.
+\]
+The finite identity
+\[
+ (1-q)^2S_n=nq-(n+1)q^2+q^{n+2}
+\]
+and $1-q=(1+x)^{-1}$ give
+\[
+ S_n=nx-x^2+\frac{x^{n+2}}{(1+x)^n}.
+\]
+Solving $G_n-1=G_nS_n$ proves the generating function. Every series inverted
+here has constant term $1$, so no analytic convergence is being used.
+
+Let
+\[
+ D_n=(1-nx+x^2)(1+x)^n-x^{n+2}.
+\]
+The coefficients of $x$, $x^{n+1}$, and $x^{n+2}$ in $D_n$ cancel, and hence
+\[
+ D_n=1-\sum_{j=2}^n c_{n,j}x^j.
+\]
+Since $D_nG_n=(1+x)^n$, coefficient extraction above degree $n$ gives the
+stated recurrence. It begins at $m=n+1$, not $m=n$, because the numerator has
+coefficient $1$ in degree $n$.
+
+Finally,
+\[
+ (1-nx+x^2)G_n=1+x^{n+2}(1+x)^{-n}G_n.
+\]
+The series multiplying $x^{n+2}$ has constant term $1$. Thus the Lucas
+recurrence holds through $m=n+1$, and its first correction is exactly
+\[
+ \boxed{F_{n+2}(n)=nF_{n+1}(n)-F_n(n)+1.}\qed
+\]
+
+\section*{Boundary cases and examples}
+
+The generating functions for the first three values of $n$ are
+\[
+ G_1=1+x,\qquad
+ G_2=\frac{(1+x)^2}{1-2x^2},\qquad
+ G_3=\frac{(1+x)^3}{1-5x^2-5x^3}.
+\]
+For $n=3$, the counts beginning at length zero are
+\[
+ 1,3,8,21,55,145.
+\]
+In particular, $145=3\cdot55-21+1$, not $144$. This shows why the stated
+Lucas recurrence cannot be continued without its length bound. The cases
+$n=1$ and $n=2$ are already covered (the first is immediate and the second is
+covered at all lengths in the source). Thus the genuinely additional range of
+the all-length formula is $n\geq3$ and $m\geq n+2$.
+
+\section*{Relation to the source and literature boundary}
+
+Daugherty, Harris, Klein, and McClinton, \emph{Metered Parking Functions},
+\emph{Integers} \textbf{25} (2025), A73, pose Problem 2 on p.~32: find a
+recursive or closed formula when $m>n$. Their Theorem 2 (pp.~14--15) proves the
+Lucas recurrence only for $2\leq m\leq n+1$, and Proposition 6 (pp.~17--18)
+already treats all lengths when $n=2$. The explicit all-length elimination
+above answers the stated Problem 2 mathematically by reusing and extending the
+local applicability of the paper's last-outcome decomposition; it does not
+claim a new model or state equation.
+
+No exact all-length formula of this form was identified in the sources
+inspected during the bounded check, but that is not a first-solution or
+priority claim. The paper is also available as arXiv:2406.12941. OEIS
+\href{https://oeis.org/A372817}{A372817} is a useful data table; its entry
+includes $145$, which is incompatible with continuing the bounded Lucas
+recurrence without qualification. No statement here assigns a cause to that
+presentation.
+
+\section*{Finite validation and disclosure}
+
+A finite, definition-level check examined $586023$ ordered inputs for
+$n=1,\ldots,5$, $m=0,\ldots,8$, and $t=1$, using two original simulators; the
+resulting $45$ count rows agreed with the formula. A separate state/scalar
+comparison covered $n=1,\ldots,20$ and $m=0,\ldots,40$. This finite evidence
+is not a premise of the proof and is not evidence of novelty.
+
+\section*{Sources}
+\begin{enumerate}
+\item Spencer Daugherty, Pamela E. Harris, Ian Klein, and Matt McClinton,
+``Metered Parking Functions,'' \emph{Integers} \textbf{25} (2025), A73,
+Problem 2 p.~32, Theorem 2 p.~15 (supporting argument pp.~14--15), and
+Proposition 6 p.~18 (introduction p.~17). DOI: 10.5281/zenodo.16881806.
+\url{https://math.colgate.edu/~integers/z73/z73.pdf}. arXiv:2406.12941.
+\item OEIS Foundation Inc., ``A372817,'' \url{https://oeis.org/A372817}.
+\end{enumerate}
+
+\end{document}

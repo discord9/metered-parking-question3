@@ -1,0 +1,68 @@
+import Main
+
+#check (MeteredParking.OneMeter.generatingSeries_eq_quotient :
+  ∀ n : ℕ, MeteredParking.OneMeter.generatingSeries n =
+    (1 + PowerSeries.X) ^ n *
+      PowerSeries.invOfUnit (MeteredParking.OneMeter.denominator n : PowerSeries ℤ) (1 : ℤˣ))
+#check (MeteredParking.OneMeter.coeff_generatingSeries :
+  ∀ m n : ℕ, PowerSeries.coeff m (MeteredParking.OneMeter.generatingSeries n) =
+    (MeteredParking.OneMeter.totalCount m n : ℤ))
+#check (MeteredParking.OneMeter.totalCount_recurrence :
+  ∀ n m : ℕ, 1 ≤ n → n + 1 ≤ m →
+    (MeteredParking.OneMeter.totalCount m n : ℤ) =
+      Finset.sum ((Finset.range (n + 1)).filter (fun j => 2 ≤ j))
+        (fun j => MeteredParking.OneMeter.recurrenceCoeff n j *
+          (MeteredParking.OneMeter.totalCount (m - j) n : ℤ)))
+#check (MeteredParking.OneMeter.totalCount_lucas :
+  ∀ n m : ℕ, 1 ≤ n → 2 ≤ m → m ≤ n + 1 →
+    (MeteredParking.OneMeter.totalCount m n : ℤ) =
+      (n : ℤ) * (MeteredParking.OneMeter.totalCount (m - 1) n : ℤ) -
+        (MeteredParking.OneMeter.totalCount (m - 2) n : ℤ))
+#check (MeteredParking.OneMeter.totalCount_firstCorrection :
+  ∀ n : ℕ, 1 ≤ n →
+    (MeteredParking.OneMeter.totalCount (n + 2) n : ℤ) =
+      (n : ℤ) * (MeteredParking.OneMeter.totalCount (n + 1) n : ℤ) -
+        (MeteredParking.OneMeter.totalCount n n : ℤ) + 1)
+#check (MeteredParking.OneMeter.totalCount_zero :
+  ∀ n : ℕ, MeteredParking.OneMeter.totalCount 0 n = 1)
+#check (MeteredParking.OneMeter.totalCount_one :
+  ∀ n : ℕ, MeteredParking.OneMeter.totalCount 1 n = n)
+#check (MeteredParking.OneMeter.totalCount_capacity_one :
+  ∀ m : ℕ, 2 ≤ m → MeteredParking.OneMeter.totalCount m 1 = 0)
+#check (MeteredParking.OneMeter.totalCount_capacity_two :
+  ∀ m : ℕ, 3 ≤ m → MeteredParking.OneMeter.totalCount m 2 =
+    2 * MeteredParking.OneMeter.totalCount (m - 2) 2)
+#check (MeteredParking.OneMeter.totalCount_two_two : MeteredParking.OneMeter.totalCount 2 2 = 3)
+
+#print axioms MeteredParking.OneMeter.historyEquivSuccessful
+#print axioms MeteredParking.OneMeter.card_history
+#print axioms MeteredParking.OneMeter.active_one_iff
+#print axioms MeteredParking.OneMeter.isParking_zero
+#print axioms MeteredParking.OneMeter.isParking_one_iff
+#print axioms MeteredParking.OneMeter.totalCount_zero
+#print axioms MeteredParking.OneMeter.totalCount_one
+#print axioms MeteredParking.OneMeter.isParking_init
+#print axioms MeteredParking.OneMeter.isParking_snoc_iff
+#print axioms MeteredParking.OneMeter.lastFiberEquivExtensions
+#print axioms MeteredParking.OneMeter.totalCount_eq_sum_lastFiber
+#print axioms MeteredParking.OneMeter.card_lastFiber_zero
+#print axioms MeteredParking.OneMeter.card_lastFiber_balance
+#print axioms MeteredParking.OneMeter.card_predecessor_zero
+#print axioms MeteredParking.OneMeter.card_predecessor_of_adj
+#print axioms MeteredParking.OneMeter.coeff_generatingSeries
+#print axioms MeteredParking.OneMeter.stateSeries_zero
+#print axioms MeteredParking.OneMeter.constantCoeff_stateSeries
+#print axioms MeteredParking.OneMeter.coeff_stateSeries_succ
+#print axioms MeteredParking.OneMeter.generatingSeries_sub_one
+#print axioms MeteredParking.OneMeter.stateSeries_step
+#print axioms MeteredParking.OneMeter.stateSeries_end
+#print axioms MeteredParking.OneMeter.stateSeries_power
+#print axioms MeteredParking.OneMeter.generatingSeries_mul_denominator
+#print axioms MeteredParking.OneMeter.denominator_constantCoeff
+#print axioms MeteredParking.OneMeter.generatingSeries_eq_quotient
+#print axioms MeteredParking.OneMeter.totalCount_recurrence
+#print axioms MeteredParking.OneMeter.totalCount_lucas
+#print axioms MeteredParking.OneMeter.totalCount_firstCorrection
+#print axioms MeteredParking.OneMeter.totalCount_capacity_one
+#print axioms MeteredParking.OneMeter.totalCount_capacity_two
+#print axioms MeteredParking.OneMeter.totalCount_two_two

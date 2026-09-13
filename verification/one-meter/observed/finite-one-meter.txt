@@ -1,0 +1,1 @@
+PASS: 586023 ordered inputs, 45 definition rows; state/scalar checks n=1..20,m=0..40. Finite verification only.

@@ -1,0 +1,59 @@
+MeteredParking.OneMeter.generatingSeries_eq_quotient : ∀ (n : ℕ),
+  MeteredParking.OneMeter.generatingSeries n =
+    (1 + PowerSeries.X) ^ n * (↑(MeteredParking.OneMeter.denominator n)).invOfUnit 1
+MeteredParking.OneMeter.coeff_generatingSeries : ∀ (m n : ℕ),
+  (PowerSeries.coeff m) (MeteredParking.OneMeter.generatingSeries n) = ↑(MeteredParking.OneMeter.totalCount m n)
+MeteredParking.OneMeter.totalCount_recurrence : ∀ (n m : ℕ),
+  1 ≤ n →
+    n + 1 ≤ m →
+      ↑(MeteredParking.OneMeter.totalCount m n) =
+        ∑ j ∈ Finset.range (n + 1) with 2 ≤ j,
+          MeteredParking.OneMeter.recurrenceCoeff n j * ↑(MeteredParking.OneMeter.totalCount (m - j) n)
+MeteredParking.OneMeter.totalCount_lucas : ∀ (n m : ℕ),
+  1 ≤ n →
+    2 ≤ m →
+      m ≤ n + 1 →
+        ↑(MeteredParking.OneMeter.totalCount m n) =
+          ↑n * ↑(MeteredParking.OneMeter.totalCount (m - 1) n) - ↑(MeteredParking.OneMeter.totalCount (m - 2) n)
+MeteredParking.OneMeter.totalCount_firstCorrection : ∀ (n : ℕ),
+  1 ≤ n →
+    ↑(MeteredParking.OneMeter.totalCount (n + 2) n) =
+      ↑n * ↑(MeteredParking.OneMeter.totalCount (n + 1) n) - ↑(MeteredParking.OneMeter.totalCount n n) + 1
+MeteredParking.OneMeter.totalCount_zero : ∀ (n : ℕ), MeteredParking.OneMeter.totalCount 0 n = 1
+MeteredParking.OneMeter.totalCount_one : ∀ (n : ℕ), MeteredParking.OneMeter.totalCount 1 n = n
+MeteredParking.OneMeter.totalCount_capacity_one : ∀ (m : ℕ), 2 ≤ m → MeteredParking.OneMeter.totalCount m 1 = 0
+MeteredParking.OneMeter.totalCount_capacity_two : ∀ (m : ℕ),
+  3 ≤ m → MeteredParking.OneMeter.totalCount m 2 = 2 * MeteredParking.OneMeter.totalCount (m - 2) 2
+MeteredParking.OneMeter.totalCount_two_two : MeteredParking.OneMeter.totalCount 2 2 = 3
+'MeteredParking.OneMeter.historyEquivSuccessful' depends on axioms: [propext, Classical.choice, Quot.sound]
+'MeteredParking.OneMeter.card_history' depends on axioms: [propext, Classical.choice, Quot.sound]
+'MeteredParking.OneMeter.active_one_iff' depends on axioms: [propext, Classical.choice, Quot.sound]
+'MeteredParking.OneMeter.isParking_zero' does not depend on any axioms
+'MeteredParking.OneMeter.isParking_one_iff' depends on axioms: [propext, Classical.choice, Quot.sound]
+'MeteredParking.OneMeter.totalCount_zero' depends on axioms: [propext, Classical.choice, Quot.sound]
+'MeteredParking.OneMeter.totalCount_one' depends on axioms: [propext, Classical.choice, Quot.sound]
+'MeteredParking.OneMeter.isParking_init' does not depend on any axioms
+'MeteredParking.OneMeter.isParking_snoc_iff' depends on axioms: [propext, Classical.choice, Quot.sound]
+'MeteredParking.OneMeter.lastFiberEquivExtensions' depends on axioms: [propext, Classical.choice, Quot.sound]
+'MeteredParking.OneMeter.totalCount_eq_sum_lastFiber' depends on axioms: [propext, Classical.choice, Quot.sound]
+'MeteredParking.OneMeter.card_lastFiber_zero' depends on axioms: [propext, Classical.choice, Quot.sound]
+'MeteredParking.OneMeter.card_lastFiber_balance' depends on axioms: [propext, Classical.choice, Quot.sound]
+'MeteredParking.OneMeter.card_predecessor_zero' depends on axioms: [propext, Classical.choice, Quot.sound]
+'MeteredParking.OneMeter.card_predecessor_of_adj' depends on axioms: [propext, Classical.choice, Quot.sound]
+'MeteredParking.OneMeter.coeff_generatingSeries' depends on axioms: [propext, Classical.choice, Quot.sound]
+'MeteredParking.OneMeter.stateSeries_zero' depends on axioms: [propext, Classical.choice, Quot.sound]
+'MeteredParking.OneMeter.constantCoeff_stateSeries' depends on axioms: [propext, Classical.choice, Quot.sound]
+'MeteredParking.OneMeter.coeff_stateSeries_succ' depends on axioms: [propext, Classical.choice, Quot.sound]
+'MeteredParking.OneMeter.generatingSeries_sub_one' depends on axioms: [propext, Classical.choice, Quot.sound]
+'MeteredParking.OneMeter.stateSeries_step' depends on axioms: [propext, Classical.choice, Quot.sound]
+'MeteredParking.OneMeter.stateSeries_end' depends on axioms: [propext, Classical.choice, Quot.sound]
+'MeteredParking.OneMeter.stateSeries_power' depends on axioms: [propext, Classical.choice, Quot.sound]
+'MeteredParking.OneMeter.generatingSeries_mul_denominator' depends on axioms: [propext, Classical.choice, Quot.sound]
+'MeteredParking.OneMeter.denominator_constantCoeff' depends on axioms: [propext, Classical.choice, Quot.sound]
+'MeteredParking.OneMeter.generatingSeries_eq_quotient' depends on axioms: [propext, Classical.choice, Quot.sound]
+'MeteredParking.OneMeter.totalCount_recurrence' depends on axioms: [propext, Classical.choice, Quot.sound]
+'MeteredParking.OneMeter.totalCount_lucas' depends on axioms: [propext, Classical.choice, Quot.sound]
+'MeteredParking.OneMeter.totalCount_firstCorrection' depends on axioms: [propext, Classical.choice, Quot.sound]
+'MeteredParking.OneMeter.totalCount_capacity_one' depends on axioms: [propext, Classical.choice, Quot.sound]
+'MeteredParking.OneMeter.totalCount_capacity_two' depends on axioms: [propext, Classical.choice, Quot.sound]
+'MeteredParking.OneMeter.totalCount_two_two' depends on axioms: [propext, Classical.choice, Quot.sound]

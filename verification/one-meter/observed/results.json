@@ -1,0 +1,172 @@
+{
+  "scope": "Fresh standalone verification of the complete one-meter release together with unchanged Question3.",
+  "toolchain": "Lean4.31.0 / Lake5.0.0",
+  "mathlib_revision": "fabf563a7c95a166b8d7b6efca11c8b4dc9d911f",
+  "isolation": {
+    "network": "disabled",
+    "private_repository": "not mounted",
+    "dependency_sources_caches": "prepopulated public sources/caches, all nine revisions match lock; no claim of fresh offline downloads",
+    "preexisting_project_oleans": false,
+    "proof_replay": "same pinned Lean kernel; not independent-kernel certification"
+  },
+  "checks": {
+    "release-build": {
+      "exit": 0,
+      "stderr_bytes": 0,
+      "axiom_reports": 167,
+      "source_names_match": true,
+      "standard_only": 163,
+      "empty": 4,
+      "axiom_patterns": {
+        "Classical.choice, Quot.sound, propext": 159,
+        "empty": 4,
+        "Quot.sound, propext": 4
+      },
+      "warnings_errors_sorryAx": 0,
+      "log": "lean-build.txt"
+    },
+    "release-strict-question3": {
+      "exit": 0,
+      "stderr_bytes": 0,
+      "axiom_reports": 135,
+      "source_names_match": true,
+      "standard_only": 133,
+      "empty": 2,
+      "axiom_patterns": {
+        "Classical.choice, Quot.sound, propext": 129,
+        "empty": 2,
+        "Quot.sound, propext": 4
+      },
+      "warnings_errors_sorryAx": 0,
+      "log": "lean-question3-strict.txt"
+    },
+    "release-strict-one-meter": {
+      "exit": 0,
+      "stderr_bytes": 0,
+      "axiom_reports": 32,
+      "source_names_match": true,
+      "standard_only": 30,
+      "empty": 2,
+      "axiom_patterns": {
+        "Classical.choice, Quot.sound, propext": 30,
+        "empty": 2
+      },
+      "warnings_errors_sorryAx": 0,
+      "log": "lean-one-meter-strict.txt"
+    },
+    "release-consumer-question3": {
+      "exit": 0,
+      "stderr_bytes": 0,
+      "axiom_reports": 5,
+      "source_names_match": true,
+      "standard_only": 5,
+      "empty": 0,
+      "axiom_patterns": {
+        "Classical.choice, Quot.sound, propext": 5
+      },
+      "warnings_errors_sorryAx": 0,
+      "log": "lean-question3-consumer.txt"
+    },
+    "release-consumer-one-meter": {
+      "exit": 0,
+      "stderr_bytes": 0,
+      "axiom_reports": 32,
+      "source_names_match": true,
+      "standard_only": 30,
+      "empty": 2,
+      "axiom_patterns": {
+        "Classical.choice, Quot.sound, propext": 30,
+        "empty": 2
+      },
+      "warnings_errors_sorryAx": 0,
+      "log": "lean-one-meter-consumer.txt"
+    },
+    "release-replay-question3": {
+      "exit": 0,
+      "stderr_bytes": 0,
+      "threads": 1,
+      "module": "AiMathLab",
+      "log": "lean-question3-replay.txt"
+    },
+    "release-replay-one-meter": {
+      "exit": 0,
+      "stderr_bytes": 0,
+      "threads": 1,
+      "module": "Main",
+      "log": "lean-one-meter-replay.txt"
+    },
+    "release-finite-fixed-question3": {
+      "exit": 0,
+      "expected_exit": 0,
+      "stderr_bytes": 0,
+      "log": "finite-question3.txt"
+    },
+    "release-finite-fixed-one-meter": {
+      "exit": 0,
+      "expected_exit": 0,
+      "stderr_bytes": 0,
+      "log": "finite-one-meter.txt"
+    },
+    "release-finite-fixed-other-cwd": {
+      "exit": 0,
+      "expected_exit": 0,
+      "stderr_bytes": 0,
+      "log": "finite-other-cwd.txt"
+    },
+    "release-finite-fixed-mismatch": {
+      "exit": 1,
+      "expected_exit": 1,
+      "stderr_bytes": 61,
+      "log": "finite-expected-mismatch.txt"
+    }
+  },
+  "source_and_oleans_unchanged_during_consumer_replay": true,
+  "artifact_sha256": {
+    "AiMathLab.lean": "5ac31a31c98242fc6c96d46de7d75fe24e2737ef9db235a2aa4188f5170d883c",
+    "Main.lean": "5afccee7efe79b88865314718576c08e2bb437e000526654e5be99546687e64c",
+    "lakefile.toml": "b8fffd7403c7d3fa239edbcfdfdf25967581d1a16d3b057fe0974506d8b9b833",
+    "lean-toolchain": "efac0b94923b2d8b6840cd35be9177ad0fc5ab2332f4f4311c98712cee92fdee",
+    "lake-manifest.json": "68c1875da98acc9b44200ff4a02d2daf0619975980437c5effd7337da08aab3e",
+    ".lake/build/lib/lean/AiMathLab.olean": "3fdbcfd9ce8f65f18b94110794b63f7041a3fe8c8545db5fca2ee61fc54604e1",
+    ".lake/build/lib/lean/Main.olean": "0b744ee9c5c74b05d7d64c6f488daad3b23901c3ce5a551f045eb9db53adb667",
+    "verification/one-meter/check_counts.py": "bc148cfb7511b4fb1a291eb853824db9c5025926dedf51c6fb8d8341d1cc00df",
+    "verification/one-meter/consumer-check.txt": "6d01879aee09fa810237cecd43548d62b1b0c1494322ff00342a8745ad04ec51",
+    "verification/one-meter/expected.json": "feb77da60a75b743d9a65a7f40e185d81aea46e4e5f99ec8b357ef64333a6f3d"
+  },
+  "finite_one_meter": {
+    "ordered_inputs": 586023,
+    "definition_rows": 45,
+    "definition_n": [
+      1,
+      5
+    ],
+    "definition_m": [
+      0,
+      8
+    ],
+    "state_scalar_n": [
+      1,
+      20
+    ],
+    "state_scalar_m": [
+      0,
+      40
+    ],
+    "expected_bytes_match": true,
+    "alternate_cwd_pass": true,
+    "deliberate_expected_mismatch_rejected": true,
+    "not_all_parameter_proof": true
+  },
+  "paper": {
+    "typesetter": "Tectonic0.15.0",
+    "exit": 0,
+    "stderr_bytes": 0,
+    "warnings": 0,
+    "pages": 4,
+    "bytes": 53948,
+    "sha256": "95d95f186a961ab1dd80a03a93eb798c5291f95d778445b9ced05e4d53305583",
+    "visual_check": "All four rendered pages read by Main; no clipping, overlapping formulas or missing content; updated formalization status present.",
+    "log": "paper-typeset.txt"
+  },
+  "review_limitations": "Internal AI source review is not external human peer review; neither formal verification nor finite checks establishes novelty."
+}

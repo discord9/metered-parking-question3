@@ -4,7 +4,7 @@
 
 给定任意 `t ≥ 1`、`m ≥ 2`、`1 ≤ k ≤ m−1`，成功且恰有 `k` 辆 lucky 的有序偏好串计数，对**所有 `n ≥ m−1`**等于一个**次数恰为 `k`**的有理多项式。计时规则不变：**车辆 `j` 停妥之后，车辆 `j−t` 才离开**。
 
-This repository contains a self-contained manuscript with two ordinary proofs, Lean formalizations of the primary theorem and its integer-coefficient strengthening, and reproducible finite checks. It is a public research repository, **not a claim of journal acceptance, external human peer review, or a first solution**.
+This repository contains a Question 3 manuscript with two ordinary proofs, Lean formalizations of the primary theorem and its integer-coefficient strengthening, and a separate all-car-count one-meter result for Problem 2, with reproducible finite checks. It is a public research repository, **not a claim of journal acceptance, external human peer review, or a first solution**.
 
 ## Statement
 
@@ -22,7 +22,40 @@ There is no upper bound on `t`. The case `n=m−1`, including `m=2,n=1`, is incl
 
 **Integer-coefficient strengthening — also formalized.** This same polynomial belongs to `ℤ[X]`; it does not merely take integer values. **`MeteredParking.question3_integral`** constructs an integer polynomial mapping to the original rational polynomial, with the same exact degree and evaluation at every `n ≥ m−1`. The Lean proof uses canonical forced-component reordering and factorial cancellation. Appendix A.4 gives a separate ordinary consequence of the inclusion–exclusion formula; that independent appendix proof is not itself formalized. The original rational theorem is unchanged. The manuscript also isolates the component-width lemma and gives two explicit `m=4, k=2` examples.
 
-## Read the proofs
+## One-meter parking at every car count — Problem 2
+
+A separate [one-meter note](one-meter/README.md) and [Lean module](Main.lean) give an explicit answer to **Problem 2** for the same process with `t=1`: for every `n≥1` and every number of arriving cars `m≥0`, count **all** successful ordered preference lists, without fixing a lucky-count layer. Here `m` is the number of cars, not their physical length.
+
+Writing this count as `F_m(n)`, the actual-count generating series satisfies
+
+\[
+\sum_{m\ge0}F_m(n)X^m
+=\frac{(1+X)^n}{(1-nX+X^2)(1+X)^n-X^{n+2}}.
+\]
+
+For `2≤j≤n`, set `c(n,j)=n·choose(n,j−1)−choose(n,j)−choose(n,j−2)`. Then
+
+\[
+F_m(n)=\sum_{j=2}^{n}c(n,j)F_{m-j}(n)\quad(m\ge n+1).
+\]
+
+The formalization also proves `F₀=1`, `F₁=n`, the Lucas recurrence through `m=n+1`, its exact first correction `F_(n+2)=nF_(n+1)−F_n+1`, and the capacity-one/two boundaries. The denominator has constant term one; Lean expresses the quotient by a proved unit inverse in integer formal series, not by field division. No recurrence or generating-function hypothesis is supplied by the caller.
+
+See the [separate PDF](one-meter/main.pdf), [formalization and reproduction record](verification/one-meter/LEAN.md), and [bounded literature audit](literature/one-meter_literature_audit_2026-09-13.md). The argument reuses the source authors' last-outcome decomposition; it does **not** claim historical priority. The Question 3 proof, manuscript and pinned toolchain/dependency lock are unchanged.
+
+From the repository root, after the same dependency-cache setup described below:
+
+```sh
+lake build
+lake env lean -DwarningAsError=true Main.lean
+lake env lean -DwarningAsError=true --stdin < verification/one-meter/consumer-check.txt
+LEAN_NUM_THREADS=1 lake env leanchecker -v Main
+python3 verification/one-meter/check_counts.py
+```
+
+The finite checker covers 586,023 ordered inputs and separately compares state/scalar counts for `n=1..20,m=0..40`; these bounded checks are not the all-parameter proof. `leanchecker` uses the same Lean kernel, not an independently implemented checker.
+
+## Read the Question 3 proofs
 
 - [Paper PDF](paper/main.pdf), [Markdown](paper/main.md), [TeX source](paper/main.tex): the primary rank-template/gap proof, plus a complete independent collision inclusion–exclusion proof in Appendix A.
 - [Lean source](AiMathLab.lean): theorems **`MeteredParking.question3`** and **`MeteredParking.question3_integral`**. The root module retains the name `AiMathLab` for source continuity but contains only this problem; its only import is `Mathlib`.
