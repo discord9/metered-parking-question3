@@ -672,3 +672,260 @@ end MeteredParking.OneMeter
 #print axioms MeteredParking.OneMeter.generatingSeries_mul_denominator
 #print axioms MeteredParking.OneMeter.denominator_constantCoeff
 #print axioms MeteredParking.OneMeter.generatingSeries_eq_quotient
+
+/-!
+## Coefficient recurrences and the first correction
+
+The sparse denominator is proved coefficientwise, with degrees zero and one
+handled before the shifted binomial formula. The recurrence then follows from
+the actual-count denominator identity. A single private residual of order
+`n + 2` yields the bounded Lucas relation and its first correction.
+-/
+
+namespace MeteredParking.OneMeter
+
+open scoped BigOperators
+open PowerSeries
+
+/-- Recurrence coefficients in the integers. Their denominator interpretation
+is used only for indices between two and the capacity. -/
+def recurrenceCoeff (n j : ℕ) : ℤ :=
+  (n : ℤ) * (Nat.choose n (j - 1) : ℤ) -
+    (Nat.choose n j : ℤ) - (Nat.choose n (j - 2) : ℤ)
+
+private theorem denominator_expansion (n : ℕ) (hn : 1 ≤ n) :
+    denominator n = 1 -
+      ∑ j ∈ (Finset.range (n + 1)).filter (fun j => 2 ≤ j),
+        Polynomial.C (recurrenceCoeff n j) * Polynomial.X ^ j := by
+  classical
+  have hshift (k d : ℕ) :
+      (Polynomial.X ^ k * (1 + Polynomial.X) ^ n : Polynomial ℤ).coeff d =
+        if k ≤ d then (n.choose (d - k) : ℤ) else 0 := by
+    rw [Polynomial.coeff_X_pow_mul']
+    simp only [Polynomial.coeff_one_add_X_pow]
+  have hraw (d : ℕ) : (denominator n).coeff d =
+      (n.choose d : ℤ) - (if 1 ≤ d then (n : ℤ) * (n.choose (d - 1) : ℤ) else 0) +
+        (if 2 ≤ d then (n.choose (d - 2) : ℤ) else 0) -
+        (if d = n + 2 then 1 else 0) := by
+    have hx := hshift 1 d
+    simp only [pow_one] at hx
+    simp only [denominator, add_mul, sub_mul, one_mul, mul_assoc,
+      Polynomial.coeff_sub, Polynomial.coeff_add, Polynomial.coeff_C_mul,
+      Polynomial.coeff_one_add_X_pow, Polynomial.coeff_X_pow]
+    rw [hx, hshift 2 d]
+    split_ifs <;> ring
+  have hsum (d : ℕ) :
+      (∑ j ∈ (Finset.range (n + 1)).filter (fun j => 2 ≤ j),
+        Polynomial.C (recurrenceCoeff n j) * Polynomial.X ^ j).coeff d =
+      if d ∈ (Finset.range (n + 1)).filter (fun j => 2 ≤ j)
+        then recurrenceCoeff n d else 0 := by
+    rw [Polynomial.finsetSum_coeff]
+    simp only [Polynomial.coeff_C_mul_X_pow]
+    simp
+  apply Polynomial.ext
+  intro d
+  rw [hraw, Polynomial.coeff_sub, Polynomial.coeff_one, hsum]
+  by_cases hd0 : d = 0
+  · subst d
+    simp
+  by_cases hd1 : d = 1
+  · subst d
+    simp
+  have hd2 : 2 ≤ d := by omega
+  have hdpos : 1 ≤ d := by omega
+  by_cases hdn : d ≤ n
+  · have hmem : d ∈ (Finset.range (n + 1)).filter (fun j => 2 ≤ j) := by
+      simp only [Finset.mem_filter, Finset.mem_range]
+      omega
+    have hne : d ≠ n + 2 := by omega
+    rw [if_pos hdpos, if_pos hd2, if_neg hne, if_neg hd0, if_pos hmem]
+    unfold recurrenceCoeff
+    ring
+  · have hnot : d ∉ (Finset.range (n + 1)).filter (fun j => 2 ≤ j) := by
+      simp only [Finset.mem_filter, Finset.mem_range]
+      omega
+    have hchoose : n.choose d = 0 := Nat.choose_eq_zero_of_lt (by omega)
+    rw [if_pos hdpos, if_pos hd2, if_neg hd0, if_neg hnot, hchoose]
+    by_cases hdnext : d = n + 1
+    · have hsub1 : d - 1 = n := by omega
+      have hsub2 : d - 2 = n - 1 := by omega
+      have hne : d ≠ n + 2 := by omega
+      rw [hsub1, hsub2, if_neg hne, Nat.choose_self,
+        Nat.choose_symm hn, Nat.choose_one_right]
+      ring
+    · by_cases hdlast : d = n + 2
+      · have hsub1 : d - 1 = n + 1 := by omega
+        have hsub2 : d - 2 = n := by omega
+        rw [hsub1, hsub2, if_pos hdlast, Nat.choose_succ_self, Nat.choose_self]
+        ring
+      · have hzero1 : n.choose (d - 1) = 0 := Nat.choose_eq_zero_of_lt (by omega)
+        have hzero2 : n.choose (d - 2) = 0 := Nat.choose_eq_zero_of_lt (by omega)
+        rw [hzero1, hzero2, if_neg hdlast]
+        ring
+
+/-- The homogeneous recurrence starts strictly above the numerator degree. -/
+theorem totalCount_recurrence (n m : ℕ) (hn : 1 ≤ n) (hm : n + 1 ≤ m) :
+    (totalCount m n : ℤ) =
+      ∑ j ∈ (Finset.range (n + 1)).filter (fun j => 2 ≤ j),
+        recurrenceCoeff n j * (totalCount (m - j) n : ℤ) := by
+  classical
+  have hd : (denominator n : PowerSeries ℤ) = 1 -
+      ∑ j ∈ (Finset.range (n + 1)).filter (fun j => 2 ≤ j),
+        C (recurrenceCoeff n j) * X ^ j := by
+    have h := congrArg (Polynomial.coeToPowerSeries.ringHom (R := ℤ))
+      (denominator_expansion n hn)
+    simp only [map_sub, map_one, map_sum, map_mul, map_pow] at h
+    simpa only [Polynomial.coeToPowerSeries.ringHom_apply,
+      Polynomial.coe_C, Polynomial.coe_X] using h
+  have hgf : generatingSeries n -
+      ∑ j ∈ (Finset.range (n + 1)).filter (fun j => 2 ≤ j),
+        (C (recurrenceCoeff n j) * X ^ j) * generatingSeries n = (1 + X) ^ n := by
+    have h := generatingSeries_mul_denominator n
+    rw [hd, sub_mul, one_mul, Finset.sum_mul] at h
+    exact h
+  have hbinom : coeff m ((1 + X : PowerSeries ℤ) ^ n) = (n.choose m : ℤ) := by
+    have hcoe : ((1 + X) ^ n : PowerSeries ℤ) =
+        (((1 + Polynomial.X) ^ n : Polynomial ℤ) : PowerSeries ℤ) := by
+      simp only [Polynomial.coe_pow, Polynomial.coe_add, Polynomial.coe_one, Polynomial.coe_X]
+    rw [hcoe, Polynomial.coeff_coe, Polynomial.coeff_one_add_X_pow]
+  have hterms :
+      (∑ j ∈ (Finset.range (n + 1)).filter (fun j => 2 ≤ j),
+        coeff m ((C (recurrenceCoeff n j) * X ^ j) * generatingSeries n)) =
+      ∑ j ∈ (Finset.range (n + 1)).filter (fun j => 2 ≤ j),
+        recurrenceCoeff n j * (totalCount (m - j) n : ℤ) := by
+    apply Finset.sum_congr rfl
+    intro j hj
+    have hjn := Finset.mem_range.mp (Finset.mem_filter.mp hj).1
+    have hjm : j ≤ m := by omega
+    rw [mul_assoc, coeff_C_mul, coeff_X_pow_mul', if_pos hjm, coeff_generatingSeries]
+  have h := congrArg (coeff m) hgf
+  simp only [map_sub, map_sum, coeff_generatingSeries] at h
+  rw [hterms, hbinom, Nat.choose_eq_zero_of_lt (by omega : n < m), Nat.cast_zero] at h
+  exact sub_eq_zero.mp h
+
+private theorem generatingSeries_residual (n : ℕ) :
+    ∃ R : PowerSeries ℤ, constantCoeff R = 1 ∧
+      (1 - C (n : ℤ) * X + X ^ 2) * generatingSeries n = 1 + X ^ (n + 2) * R := by
+  let H : PowerSeries ℤ := (1 + X) ^ n
+  let U := PowerSeries.invOfUnit H (1 : ℤˣ)
+  have hH : constantCoeff H = 1 := by simp [H]
+  have hUH : U * H = 1 := PowerSeries.invOfUnit_mul H (1 : ℤˣ) hH
+  have hU : constantCoeff U = 1 := by
+    simp only [U, PowerSeries.constantCoeff_invOfUnit, inv_one, Units.val_one]
+  have hG : constantCoeff (generatingSeries n) = 1 := by
+    simpa only [coeff_zero_eq_constantCoeff, totalCount_zero, Nat.cast_one] using
+      coeff_generatingSeries 0 n
+  refine ⟨U * generatingSeries n, ?_, ?_⟩
+  · rw [map_mul, hU, hG, one_mul]
+  · have hd := generatingSeries_mul_denominator n
+    simp only [denominator, Polynomial.coe_sub, Polynomial.coe_mul, Polynomial.coe_add,
+      Polynomial.coe_one, Polynomial.coe_C, Polynomial.coe_X, Polynomial.coe_pow] at hd
+    have hres : H * ((1 - C (n : ℤ) * X + X ^ 2) * generatingSeries n - 1) =
+        X ^ (n + 2) * generatingSeries n := by
+      dsimp only [H]
+      linear_combination hd
+    calc
+      (1 - C (n : ℤ) * X + X ^ 2) * generatingSeries n =
+          1 + (U * H) * ((1 - C (n : ℤ) * X + X ^ 2) * generatingSeries n - 1) := by
+        rw [hUH, one_mul]
+        ring
+      _ = 1 + U * (X ^ (n + 2) * generatingSeries n) := by rw [mul_assoc, hres]
+      _ = 1 + X ^ (n + 2) * (U * generatingSeries n) := by ring
+
+private theorem coeff_quadratic_generatingSeries (n m : ℕ) (hm : 2 ≤ m) :
+    coeff m ((1 - C (n : ℤ) * X + X ^ 2) * generatingSeries n) =
+      (totalCount m n : ℤ) - (n : ℤ) * (totalCount (m - 1) n : ℤ) +
+        (totalCount (m - 2) n : ℤ) := by
+  have hshift : coeff m (X * generatingSeries n) = (totalCount (m - 1) n : ℤ) := by
+    have h := coeff_X_pow_mul' (generatingSeries n) 1 m
+    simpa only [pow_one, if_pos (by omega : 1 ≤ m), coeff_generatingSeries] using h
+  simp only [add_mul, sub_mul, one_mul, mul_assoc, map_add, map_sub,
+    coeff_C_mul, coeff_generatingSeries]
+  rw [hshift, coeff_X_pow_mul', if_pos hm, coeff_generatingSeries]
+
+/-- The Lucas relation holds through length `n + 1`, but is not extended beyond it. -/
+theorem totalCount_lucas (n m : ℕ)
+    (_hn : 1 ≤ n) (hm : 2 ≤ m) (hmn : m ≤ n + 1) :
+    (totalCount m n : ℤ) =
+      (n : ℤ) * (totalCount (m - 1) n : ℤ) - (totalCount (m - 2) n : ℤ) := by
+  obtain ⟨R, _, hres⟩ := generatingSeries_residual n
+  have h := congrArg (coeff m) hres
+  rw [coeff_quadratic_generatingSeries n m hm, map_add, coeff_one,
+    if_neg (by omega : m ≠ 0), coeff_X_pow_mul',
+    if_neg (by omega : ¬n + 2 ≤ m), zero_add] at h
+  linarith
+
+/-- The first coefficient beyond the Lucas range receives exactly one extra term. -/
+theorem totalCount_firstCorrection (n : ℕ) (hn : 1 ≤ n) :
+    (totalCount (n + 2) n : ℤ) =
+      (n : ℤ) * (totalCount (n + 1) n : ℤ) - (totalCount n n : ℤ) + 1 := by
+  obtain ⟨R, hR, hres⟩ := generatingSeries_residual n
+  have h := congrArg (coeff (n + 2)) hres
+  rw [coeff_quadratic_generatingSeries n (n + 2) (by omega), map_add, coeff_one,
+    if_neg (by omega : n + 2 ≠ 0), coeff_X_pow_mul', if_pos le_rfl,
+    Nat.sub_self, coeff_zero_eq_constantCoeff, hR, zero_add] at h
+  have hsub1 : n + 2 - 1 = n + 1 := by omega
+  have hsub2 : n + 2 - 2 = n := by omega
+  rw [hsub1, hsub2] at h
+  linarith
+
+/-- Capacity one is covered by the general recurrence with an empty index set. -/
+theorem totalCount_capacity_one (m : ℕ) (hm : 2 ≤ m) : totalCount m 1 = 0 := by
+  have h := totalCount_recurrence 1 m (by omega) (by omega)
+  norm_num [Finset.sum_filter, Finset.sum_range_succ] at h
+  exact_mod_cast h
+
+/-- Capacity two is covered by the single recurrence coefficient at index two. -/
+theorem totalCount_capacity_two (m : ℕ) (hm : 3 ≤ m) :
+    totalCount m 2 = 2 * totalCount (m - 2) 2 := by
+  have h := totalCount_recurrence 2 m (by omega) (by omega)
+  norm_num [Finset.sum_filter, Finset.sum_range_succ, recurrenceCoeff, Nat.choose] at h
+  exact_mod_cast h
+
+theorem totalCount_two_two : totalCount 2 2 = 3 := by
+  have h := totalCount_lucas 2 2 (by omega) (by omega) (by omega)
+  norm_num [totalCount_zero, totalCount_one] at h
+  exact_mod_cast h
+
+end MeteredParking.OneMeter
+
+#print axioms MeteredParking.OneMeter.totalCount_recurrence
+#print axioms MeteredParking.OneMeter.totalCount_lucas
+#print axioms MeteredParking.OneMeter.totalCount_firstCorrection
+#print axioms MeteredParking.OneMeter.totalCount_capacity_one
+#print axioms MeteredParking.OneMeter.totalCount_capacity_two
+#print axioms MeteredParking.OneMeter.totalCount_two_two
+
+#check (MeteredParking.OneMeter.generatingSeries_eq_quotient :
+  ∀ n : ℕ, MeteredParking.OneMeter.generatingSeries n =
+    (1 + PowerSeries.X) ^ n *
+      PowerSeries.invOfUnit (MeteredParking.OneMeter.denominator n : PowerSeries ℤ) (1 : ℤˣ))
+#check (MeteredParking.OneMeter.coeff_generatingSeries :
+  ∀ m n : ℕ, PowerSeries.coeff m (MeteredParking.OneMeter.generatingSeries n) =
+    (MeteredParking.OneMeter.totalCount m n : ℤ))
+#check (MeteredParking.OneMeter.totalCount_recurrence :
+  ∀ n m : ℕ, 1 ≤ n → n + 1 ≤ m →
+    (MeteredParking.OneMeter.totalCount m n : ℤ) =
+      Finset.sum ((Finset.range (n + 1)).filter (fun j => 2 ≤ j))
+        (fun j => MeteredParking.OneMeter.recurrenceCoeff n j *
+          (MeteredParking.OneMeter.totalCount (m - j) n : ℤ)))
+#check (MeteredParking.OneMeter.totalCount_lucas :
+  ∀ n m : ℕ, 1 ≤ n → 2 ≤ m → m ≤ n + 1 →
+    (MeteredParking.OneMeter.totalCount m n : ℤ) =
+      (n : ℤ) * (MeteredParking.OneMeter.totalCount (m - 1) n : ℤ) -
+        (MeteredParking.OneMeter.totalCount (m - 2) n : ℤ))
+#check (MeteredParking.OneMeter.totalCount_firstCorrection :
+  ∀ n : ℕ, 1 ≤ n →
+    (MeteredParking.OneMeter.totalCount (n + 2) n : ℤ) =
+      (n : ℤ) * (MeteredParking.OneMeter.totalCount (n + 1) n : ℤ) -
+        (MeteredParking.OneMeter.totalCount n n : ℤ) + 1)
+#check (MeteredParking.OneMeter.totalCount_zero :
+  ∀ n : ℕ, MeteredParking.OneMeter.totalCount 0 n = 1)
+#check (MeteredParking.OneMeter.totalCount_one :
+  ∀ n : ℕ, MeteredParking.OneMeter.totalCount 1 n = n)
+#check (MeteredParking.OneMeter.totalCount_capacity_one :
+  ∀ m : ℕ, 2 ≤ m → MeteredParking.OneMeter.totalCount m 1 = 0)
+#check (MeteredParking.OneMeter.totalCount_capacity_two :
+  ∀ m : ℕ, 3 ≤ m → MeteredParking.OneMeter.totalCount m 2 =
+    2 * MeteredParking.OneMeter.totalCount (m - 2) 2)
+#check (MeteredParking.OneMeter.totalCount_two_two : MeteredParking.OneMeter.totalCount 2 2 = 3)
