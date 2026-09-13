@@ -461,3 +461,214 @@ end MeteredParking.OneMeter
 #print axioms MeteredParking.OneMeter.card_lastFiber_balance
 #print axioms MeteredParking.OneMeter.card_predecessor_zero
 #print axioms MeteredParking.OneMeter.card_predecessor_of_adj
+
+/-!
+## Actual-count series and finite-state elimination
+
+The total series uses the original preference counts. Physical state `p.succ`
+uses the actual last-outcome fibers, shifted by `X`; state zero is the zero
+series, not an outcome of an empty history. The finite state equations are
+eliminated by polynomial ring identities before any inverse is introduced.
+-/
+
+namespace MeteredParking.OneMeter
+
+open scoped BigOperators
+open PowerSeries
+
+/-- The generating series of the direct successful-preference counts. -/
+noncomputable def generatingSeries (n : ℕ) : PowerSeries ℤ :=
+  PowerSeries.mk (fun m => (totalCount m n : ℤ))
+
+/-- State zero is virtual; state `p.succ` counts nonempty histories ending at `p`. -/
+noncomputable def stateSeries (n : ℕ) : Fin (n + 1) → PowerSeries ℤ := by
+  classical
+  exact Fin.cons 0 (fun p : Fin n =>
+    X * PowerSeries.mk (fun r => (Fintype.card (LastFiber r n p) : ℤ)))
+
+/-- The finite denominator polynomial; it is coerced to a series when needed. -/
+noncomputable def denominator (n : ℕ) : Polynomial ℤ :=
+  (1 - Polynomial.C (n : ℤ) * Polynomial.X + Polynomial.X ^ 2) *
+      (1 + Polynomial.X) ^ n - Polynomial.X ^ (n + 2)
+
+@[simp] theorem coeff_generatingSeries (m n : ℕ) :
+    coeff m (generatingSeries n) = (totalCount m n : ℤ) :=
+  PowerSeries.coeff_mk m _
+
+@[simp] theorem stateSeries_zero (n : ℕ) : stateSeries n 0 = 0 := by
+  simp only [stateSeries, Fin.cons_zero]
+
+@[simp] theorem constantCoeff_stateSeries (n : ℕ) (j : Fin (n + 1)) :
+    constantCoeff (stateSeries n j) = 0 := by
+  refine Fin.cases ?_ (fun p => ?_) j
+  · rw [stateSeries_zero, map_zero]
+  · simp only [stateSeries, Fin.cons_succ, map_mul, constantCoeff_X, zero_mul]
+
+@[simp] theorem coeff_stateSeries_succ (r n : ℕ) (p : Fin n) :
+    coeff (r + 1) (stateSeries n p.succ) = (Fintype.card (LastFiber r n p) : ℤ) := by
+  simp only [stateSeries, Fin.cons_succ, coeff_succ_X_mul, coeff_mk]
+
+private theorem predecessor_card_eq_coeff (r n : ℕ) (p : Fin n) :
+    (Fintype.card {H : History (r + 1) n // (lastOutcome H : ℕ) + 1 = (p : ℕ)} : ℤ) =
+      coeff (r + 1) (stateSeries n p.castSucc) := by
+  classical
+  by_cases hp : (p : ℕ) = 0
+  · have hcast : p.castSucc = (0 : Fin (n + 1)) := Fin.ext hp
+    rw [card_predecessor_zero p hp, hcast, stateSeries_zero]
+    simp
+  · let k : Fin n := ⟨(p : ℕ) - 1, by
+      have hpn := p.isLt
+      omega⟩
+    have hkp : (k : ℕ) + 1 = (p : ℕ) := by
+      change (p : ℕ) - 1 + 1 = (p : ℕ)
+      omega
+    have hcast : p.castSucc = k.succ := Fin.ext hkp.symm
+    rw [card_predecessor_of_adj k p hkp, hcast, coeff_stateSeries_succ]
+
+/-- The nonconstant total series is the sum of the actual physical-state series. -/
+theorem generatingSeries_sub_one (n : ℕ) :
+    generatingSeries n - 1 = ∑ p : Fin n, stateSeries n p.succ := by
+  classical
+  apply PowerSeries.ext
+  intro m
+  cases m with
+  | zero => simp [generatingSeries, totalCount_zero]
+  | succ r =>
+      simp only [map_sub, map_sum, coeff_generatingSeries, coeff_stateSeries_succ,
+        coeff_one, Nat.succ_ne_zero, if_false, sub_zero]
+      exact_mod_cast totalCount_eq_sum_lastFiber r n
+
+/-- The local series equation follows coefficientwise from the additive natural
+cardinality balance, preserving the two tagged preference extensions. -/
+theorem stateSeries_step (n : ℕ) (p : Fin n) :
+    (1 + X) * stateSeries n p.succ =
+      X * generatingSeries n + X * stateSeries n p.castSucc := by
+  classical
+  apply PowerSeries.ext
+  intro m
+  cases m with
+  | zero =>
+      simp only [coeff_zero_eq_constantCoeff, map_mul, map_add, map_one,
+        constantCoeff_X, constantCoeff_stateSeries, mul_zero, zero_mul, add_zero]
+  | succ r =>
+      rw [add_mul, one_mul]
+      simp only [map_add, coeff_succ_X_mul, coeff_stateSeries_succ, coeff_generatingSeries]
+      cases r with
+      | zero =>
+          simp [coeff_zero_eq_constantCoeff, card_lastFiber_zero, totalCount_zero]
+      | succ r =>
+          rw [coeff_stateSeries_succ, ← predecessor_card_eq_coeff]
+          exact_mod_cast card_lastFiber_balance r n p
+
+/-- Summing the finite state equations leaves only the final physical state. -/
+theorem stateSeries_end (n : ℕ) :
+    (1 - C (n : ℤ) * X) * generatingSeries n + X * stateSeries n (Fin.last n) = 1 := by
+  classical
+  have htel : (∑ p : Fin n, stateSeries n p.castSucc) + stateSeries n (Fin.last n) =
+      ∑ p : Fin n, stateSeries n p.succ := by
+    calc
+      _ = ∑ j : Fin (n + 1), stateSeries n j := (Fin.sum_univ_castSucc _).symm
+      _ = stateSeries n 0 + ∑ p : Fin n, stateSeries n p.succ := Fin.sum_univ_succ _
+      _ = _ := by rw [stateSeries_zero, zero_add]
+  have hsum : (1 + X) * (∑ p : Fin n, stateSeries n p.succ) =
+      C (n : ℤ) * (X * generatingSeries n) + X * (∑ p : Fin n, stateSeries n p.castSucc) := by
+    calc
+      _ = ∑ p : Fin n, (1 + X) * stateSeries n p.succ := Finset.mul_sum _ _ _
+      _ = ∑ p : Fin n, (X * generatingSeries n + X * stateSeries n p.castSucc) := by
+        apply Finset.sum_congr rfl
+        intro p _
+        exact stateSeries_step n p
+      _ = _ := by
+        simp only [Finset.sum_add_distrib, Fin.sum_const, nsmul_eq_mul,
+          ← Finset.mul_sum, map_natCast]
+        ring
+  rw [← generatingSeries_sub_one n] at hsum htel
+  linear_combination hsum + X * htel
+
+/-- Bounded induction over the actual state indices eliminates each state
+without cancelling or inverting `1 + X`. -/
+theorem stateSeries_power (n : ℕ) (j : Fin (n + 1)) :
+    (1 + X) ^ (j : ℕ) * stateSeries n j =
+      X * generatingSeries n * ((1 + X) ^ (j : ℕ) - X ^ (j : ℕ)) := by
+  have h : ∀ k : ℕ, ∀ hk : k < n + 1,
+      (1 + X) ^ k * stateSeries n ⟨k, hk⟩ =
+        X * generatingSeries n * ((1 + X) ^ k - X ^ k) := by
+    intro k
+    induction k with
+    | zero =>
+        intro hk
+        have hz : (⟨0, hk⟩ : Fin (n + 1)) = 0 := Fin.ext rfl
+        simp only [hz, stateSeries_zero, pow_zero, mul_zero, sub_self]
+    | succ k ih =>
+        intro hk
+        let p : Fin n := ⟨k, by omega⟩
+        have hi : (1 + X) ^ k * stateSeries n p.castSucc =
+            X * generatingSeries n * ((1 + X) ^ k - X ^ k) := ih (by omega)
+        have hs := stateSeries_step n p
+        change (1 + X) ^ (k + 1) * stateSeries n p.succ =
+          X * generatingSeries n * ((1 + X) ^ (k + 1) - X ^ (k + 1))
+        calc
+          (1 + X) ^ (k + 1) * stateSeries n p.succ =
+              (1 + X) ^ k * ((1 + X) * stateSeries n p.succ) := by
+            rw [pow_succ, mul_assoc]
+          _ = (1 + X) ^ k * (X * generatingSeries n + X * stateSeries n p.castSucc) :=
+            congrArg (fun F : PowerSeries ℤ => (1 + X) ^ k * F) hs
+          _ = X * generatingSeries n * (1 + X) ^ k +
+              X * ((1 + X) ^ k * stateSeries n p.castSucc) := by ring
+          _ = X * generatingSeries n * (1 + X) ^ k +
+              X * (X * generatingSeries n * ((1 + X) ^ k - X ^ k)) := by rw [hi]
+          _ = X * generatingSeries n * ((1 + X) ^ (k + 1) - X ^ (k + 1)) := by
+            simp only [pow_succ]
+            ring
+  exact h (j : ℕ) j.isLt
+
+/-- The denominator identity is obtained from the actual-count state equations
+by finite elimination. It is not an assumed scalar recurrence. -/
+theorem generatingSeries_mul_denominator (n : ℕ) :
+    (denominator n : PowerSeries ℤ) * generatingSeries n = (1 + X) ^ n := by
+  have hend := stateSeries_end n
+  have hpower : (1 + X) ^ n * stateSeries n (Fin.last n) =
+      X * generatingSeries n * ((1 + X) ^ n - X ^ n) :=
+    stateSeries_power n (Fin.last n)
+  simp only [denominator, Polynomial.coe_sub, Polynomial.coe_mul, Polynomial.coe_add,
+    Polynomial.coe_one, Polynomial.coe_C, Polynomial.coe_X, Polynomial.coe_pow]
+  rw [pow_add]
+  linear_combination (1 + X) ^ n * hend - X * hpower
+
+/-- The denominator has constant term one, so the unit inverse is genuine. -/
+@[simp] theorem denominator_constantCoeff (n : ℕ) :
+    constantCoeff (denominator n : PowerSeries ℤ) = 1 := by
+  simp only [denominator, Polynomial.coe_sub, Polynomial.coe_mul, Polynomial.coe_add,
+    Polynomial.coe_one, Polynomial.coe_C, Polynomial.coe_X, Polynomial.coe_pow]
+  simp
+
+/-- The formal-series quotient over the integers. The inverse identities use
+the proved constant coefficient, with no field division or convergence premise. -/
+theorem generatingSeries_eq_quotient (n : ℕ) :
+    generatingSeries n =
+      (1 + X) ^ n * PowerSeries.invOfUnit (denominator n : PowerSeries ℤ) (1 : ℤˣ) := by
+  have hinv : PowerSeries.invOfUnit (denominator n : PowerSeries ℤ) (1 : ℤˣ) *
+      (denominator n : PowerSeries ℤ) = 1 :=
+    PowerSeries.invOfUnit_mul _ _ (denominator_constantCoeff n)
+  calc
+    generatingSeries n =
+        (PowerSeries.invOfUnit (denominator n : PowerSeries ℤ) (1 : ℤˣ) *
+          (denominator n : PowerSeries ℤ)) * generatingSeries n := by rw [hinv, one_mul]
+    _ = PowerSeries.invOfUnit (denominator n : PowerSeries ℤ) (1 : ℤˣ) *
+        ((denominator n : PowerSeries ℤ) * generatingSeries n) := mul_assoc _ _ _
+    _ = (1 + X) ^ n * PowerSeries.invOfUnit (denominator n : PowerSeries ℤ) (1 : ℤˣ) := by
+      rw [generatingSeries_mul_denominator, mul_comm]
+
+end MeteredParking.OneMeter
+
+#print axioms MeteredParking.OneMeter.coeff_generatingSeries
+#print axioms MeteredParking.OneMeter.stateSeries_zero
+#print axioms MeteredParking.OneMeter.constantCoeff_stateSeries
+#print axioms MeteredParking.OneMeter.coeff_stateSeries_succ
+#print axioms MeteredParking.OneMeter.generatingSeries_sub_one
+#print axioms MeteredParking.OneMeter.stateSeries_step
+#print axioms MeteredParking.OneMeter.stateSeries_end
+#print axioms MeteredParking.OneMeter.stateSeries_power
+#print axioms MeteredParking.OneMeter.generatingSeries_mul_denominator
+#print axioms MeteredParking.OneMeter.denominator_constantCoeff
+#print axioms MeteredParking.OneMeter.generatingSeries_eq_quotient
