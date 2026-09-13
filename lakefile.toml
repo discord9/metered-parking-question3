@@ -1,7 +1,7 @@
 name = "metered_parking_question3"
 version = "0.1.0"
 keywords = ["math", "parking-functions"]
-defaultTargets = ["AiMathLab"]
+defaultTargets = ["AiMathLab", "Main"]
 
 [leanOptions]
 pp.unicode.fun = true
@@ -16,3 +16,6 @@ rev = "v4.31.0"
 
 [[lean_lib]]
 name = "AiMathLab"
+
+[[lean_lib]]
+name = "Main"
