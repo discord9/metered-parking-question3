@@ -90,7 +90,8 @@
     "verification/one-meter/LEAN.md": "502415aab23ccb5c24f5c010479833d5e99ee089a46151e9663f2472ca065047",
     "verification/one-meter/check_counts.py": "bc148cfb7511b4fb1a291eb853824db9c5025926dedf51c6fb8d8341d1cc00df",
     "verification/one-meter/expected.json": "feb77da60a75b743d9a65a7f40e185d81aea46e4e5f99ec8b357ef64333a6f3d",
-    "verification/one-meter/consumer-check.txt": "6d01879aee09fa810237cecd43548d62b1b0c1494322ff00342a8745ad04ec51"
+    "verification/one-meter/consumer-check.txt": "6d01879aee09fa810237cecd43548d62b1b0c1494322ff00342a8745ad04ec51",
+    "paper/PROOF_EXPLAINED_ZH.md": "b7e6ecc32a98866f5210a06df7c3375be79da33ea11c95d7b1fca10a348c3685"
   },
   "observed_verification": "verification/observed/results.json",
   "typesetter": "Tectonic 0.15.0",

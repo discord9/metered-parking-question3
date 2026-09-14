@@ -6,6 +6,8 @@
 
 This repository contains a Question 3 manuscript with two ordinary proofs, Lean formalizations of the primary theorem and its integer-coefficient strengthening, and a separate all-car-count one-meter result for Problem 2, with reproducible finite checks. It is a public research repository, **not a claim of journal acceptance, external human peer review, or a first solution**.
 
+**中文证明导读：[从停车过程到多项式与生成函数](paper/PROOF_EXPLAINED_ZH.md)** — 用具体例子解释两个已完成结果的完整证明路线：Question 3 的秩模板、精确次数与整数系数，以及 `t=1` 时任意车数的生成函数和递推边界。
+
 ## Statement
 
 There are `m` labelled cars arriving in order and `n` ordered parking spaces. A preference list is an ordered element of `[n]^m`. Each car parks at the first free space at or to the right of its preference, or fails if none exists. After car `j` successfully parks, car `j−t`, if present, leaves. A car is **lucky** when it parks at its preference. Spaces may be reused after departure.
